@@ -3,12 +3,77 @@
 <head>
     <meta charset="utf-8">
     <title>{{title}}</title>
+    <style>
+        body {
+            min-width: fit-content;
+            margin: 0px;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            align-self: flex-start;
+            width: 100%;
+            background: #333;
+            padding: 10px 0;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+
+        }
+
+        nav {
+            margin: auto;
+        }
+        nav a{
+            color: #fff;
+            padding: 7px 25px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        main {
+            align-self: flex-start;
+            min-width: 100%;
+            min-height: 100%;
+            overflow-y: scroll;
+        }
+        footer {
+            align-self: flex-end;
+            width: 100%;
+            text-align: center;
+            background-color: #ddd;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style>
     {{{css}}}
     {{{js}}}
 </head>
 <body>
 
-    {{{body}}}
-
+    <header>
+        <nav>
+            <a href="./" class="center">
+                <img src="./static/home_white.svg" width="50" height="50"  style="margin:none;width:50px;height:50px;"/> <br>
+                <span>
+                    Home - Http log List
+                </span>
+            </a>
+            <a href="./vhost" class="center">
+                <img src="./static/server.svg" width="50" height="50"  style="margin:none;width:50px;height:50px;"/> <br>
+                <span>
+                    Virtual Host Management
+                </span>
+            </a>
+        </nav>
+    </header>
+    <main>
+        {{{body}}}
+    </main>
+    <footer>
+        I am footer
+    </footer>
 </body>
 </html>

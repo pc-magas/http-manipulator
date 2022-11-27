@@ -17,6 +17,8 @@ const hbs = express_handlebars.create({
 });
 
 app.use('/static',express.static(path.join(__dirname,'/../../static')));
+
+
 wsServer.on('connection', function connection(ws) {
     // ...
 });
