@@ -1,0 +1,18 @@
+{
+  "name": "http_manipulator",
+  "version": "1.0.0",
+  "description": "A simple reserve proxy and http server for mocking and manipulating http requests",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "author": "Dimitrios Desyllas",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-handlebars": "^6.0.6",
+    "handlebars": "^4.7.7",
+    "ws": "^8.11.0"
+  }
+}
