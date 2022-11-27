@@ -16,7 +16,10 @@ const hbs = express_handlebars.create({
     defaultLayout: 'main'
 });
 
-app.use('/static',express.static(path.join(__dirname,'/../../static')));
+app.engine('handlebars', hbs.engine); 
+app.set('view engine', 'handlebars');
+app.set('views',path.join(__dirname,'/../../views'));
+
 
 
 wsServer.on('connection', function connection(ws) {
@@ -27,13 +30,16 @@ wsServer.on('message',function connection(ws) {
     // ...
 });
 
-app.engine('handlebars', hbs.engine); 
-app.set('view engine', 'handlebars');
-app.set('views',path.join(__dirname,'/../../views'));
+
+app.use('/static',express.static(path.join(__dirname,'/../../static')));
 
 app.get('/', (req, res, next) => {
     res.render('home');
 });
+
+app.get('/licence',(req,res,next)=>{
+    res.render('licence');
+})
 
 module.exports.listen = function(port) {
     console.log("Listening for control panel");
