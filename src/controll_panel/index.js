@@ -34,12 +34,15 @@ wsServer.on('message',function connection(ws) {
 app.use('/static',express.static(path.join(__dirname,'/../../static')));
 
 app.get('/', (req, res, next) => {
-    res.render('home');
+    res.render('home',{title:'Homepage'});
 });
 
 app.get('/licence',(req,res,next)=>{
     res.render('licence');
 })
+
+app.get('/static/css/boostrap',path.join(__dirname,'/../../node_modules/bootstrap/dist/css'));
+app.get('/static/js/boostrap',path.join(__dirname,'/../../node_modules/bootstrap/dist/js'));
 
 module.exports.listen = function(port) {
     console.log("Listening for control panel");

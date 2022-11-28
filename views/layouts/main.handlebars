@@ -19,7 +19,6 @@
             display: flex;
             justify-content: center;
             align-content: center;
-
         }
 
         nav {
@@ -33,10 +32,19 @@
         }
         main {
             align-self: flex-start;
-            min-width: 100%;
-            min-height: 100%;
-            padding: 5px;
+            display:inline-block;
+            box-sizing: border-box;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
         }
+
+        main > * {
+            margin: 5px;
+            margin-left: 1px;
+            max-width: 100%;
+        }
+
         footer {
             align-self: flex-end;
             width: 100%;
@@ -47,16 +55,8 @@
         .center {
             text-align: center;
         }
-
-        #warning {
-            background-color: #ffff4d;
-            width: 100%;
-            border: 2px solid;
-            border-color:#747400;
-            padding: 1px;
-            font-size: 2em;
-        }
     </style>
+    <link href="./static/warning.css" rel="stylesheet" type="text/css" >
     {{{css}}}
     {{{js}}}
 </head>
@@ -85,7 +85,6 @@
         </nav>
     </header>
     <main>
-
         {{{body}}}
     </main>
     <footer>
