@@ -42,6 +42,9 @@ app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modu
 app.get('/', (req, res, next) => {
     res.render('home',{
         title:'Homepage',
+        js: [
+            '/static/js/home.js'
+        ],
         baseUrl: `${req.protocol}://${req.get('host')}`
     });
 });
