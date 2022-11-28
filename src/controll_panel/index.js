@@ -2,9 +2,12 @@ const express = require('express');
 const ws = require('ws');
 const path = require('path');
 const express_handlebars = require('express-handlebars');
+const EventEmitter = require('node:events');
 
 const app = express();
 const wsServer = new ws.WebSocketServer({ noServer: true });
+
+const myEmitter = new EventEmitter();
 
 
 const hbs = express_handlebars.create({
@@ -20,14 +23,16 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views',path.join(__dirname,'/../../views'));
 
-
-
 wsServer.on('connection', function connection(ws) {
-    // ...
+    console.log("Websocket connected");
+    myEmitter.on('http', function(e) {
+        ws.send(e.data);
+    });
 });
 
 wsServer.on('message',function connection(ws) {
-    // ...
+    console.log("Websocket received a message");
+
 });
 
 
@@ -57,6 +62,7 @@ app.get('/licence',(req,res,next)=>{
 
 module.exports.listen = function(port) {
     console.log("Listening for control panel");
+
     const server = app.listen(port);
     server.on('upgrade', (request, socket, head) => {
         wsServer.handleUpgrade(request, socket, head, socket => {
@@ -65,11 +71,4 @@ module.exports.listen = function(port) {
      });
 };
 
-module.exports.notiFyForHttpCall = (http,httpRaw) => {
-    const message = {
-        type:"http",
-        http: http,
-        rawData:httpRaw
-    }
-    wsServer.send(message);
-}
+module.exports.event = myEmitter;
