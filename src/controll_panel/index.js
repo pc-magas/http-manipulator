@@ -32,17 +32,25 @@ wsServer.on('message',function connection(ws) {
 
 
 app.use('/static',express.static(path.join(__dirname,'/../../static')));
+app.use('/static/css/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/css')));
+app.use('/static/css/boostrap/icon/',express.static(path.join(__dirname,'/../../node_modules/bootstrap-icons')));
+app.use('/static/js/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/js')));
+
+app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modules/jquery/dist')));
+
 
 app.get('/', (req, res, next) => {
-    res.render('home',{title:'Homepage'});
+    res.render('home',{
+        title:'Homepage',
+        baseUrl: `${req.protocol}://${req.get('host')}`
+    });
 });
 
 app.get('/licence',(req,res,next)=>{
     res.render('licence');
 })
 
-app.get('/static/css/boostrap',path.join(__dirname,'/../../node_modules/bootstrap/dist/css'));
-app.get('/static/js/boostrap',path.join(__dirname,'/../../node_modules/bootstrap/dist/js'));
+
 
 module.exports.listen = function(port) {
     console.log("Listening for control panel");
