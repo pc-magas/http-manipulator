@@ -17,5 +17,8 @@
     "handlebars": "^4.7.7",
     "jquery": "^3.6.1",
     "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.3.1"
   }
 }
