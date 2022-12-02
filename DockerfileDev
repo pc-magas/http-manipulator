@@ -1,0 +1,17 @@
+FROM node:18
+
+RUN echo "#!/usr/bin/env bash" > /usr/bin/entrypoint &&\
+    echo "npm install" >> /usr/bin/entrypoint &&\
+    echo "npm start" >> /usr/bin/entrypoint &&\
+    chmod +x /usr/bin/entrypoint &&\
+    cat /usr/bin/entrypoint
+
+EXPOSE 80 \
+       449 \
+       3000
+
+VOLUME "/home/node/app"
+WORKDIR "/home/node/app"
+USER node
+
+ENTRYPOINT ["/usr/bin/entrypoint"]

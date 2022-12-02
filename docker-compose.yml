@@ -1,0 +1,24 @@
+# it is used for development and contributions
+# not intented to use for production
+version: "3"
+
+services:
+
+  manipulator:
+    build:
+      context: .
+      dockerfile: DockerfileDev
+    networks:
+      frontend:
+        ipv4_address: 172.21.0.2
+    volumes:
+      - .:/home/node/app
+
+networks:
+  frontend:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+    
+    
