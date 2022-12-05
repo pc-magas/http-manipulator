@@ -1,0 +1,8 @@
+{
+    "system_ssl":"/etc/http_manipulator/ssl/system",
+    "usr_ssl": "/etc/http_manipulator/ssl/usr",
+    "https_port": 449,
+    "http_port": 80,
+    "panel_port": 3000,
+    "local_db":"/etc/http_manipulator/db.sqlite"
+}

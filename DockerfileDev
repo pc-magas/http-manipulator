@@ -1,17 +1,21 @@
 FROM node:18
 
-RUN echo "#!/usr/bin/env bash" > /usr/bin/entrypoint &&\
+RUN mkdir -p "/etc/http_manipulator" &&\
+    mkdir -p "/etc/http_manipulator/ssl/system" &&\
+    mkdir -p "/etc/http_manipulator/ssl/usr" &&\
+    echo "#!/usr/bin/env bash" > /usr/bin/entrypoint &&\
     echo "npm install" >> /usr/bin/entrypoint &&\
     echo "npm start" >> /usr/bin/entrypoint &&\
-    chmod +x /usr/bin/entrypoint &&\
-    cat /usr/bin/entrypoint
+    chmod +x /usr/bin/entrypoint
 
 EXPOSE 80 \
        449 \
        3000
 
 VOLUME "/home/node/app" \
-        "/var/data/certs"
+        "/etc/http_manipulator/ssl/usr" \
+        "/etc/http_manipulator/config.json"
+
 WORKDIR "/home/node/app"
 USER node
 
