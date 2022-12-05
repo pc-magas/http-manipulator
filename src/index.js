@@ -1,15 +1,18 @@
+// Nodejs Dependencies
+const { exit, argv } = require('process');
 const fs = require('fs');
+
+// 3rg party dependencies
 const arg = require('arg');
-const process = require('process');
 
 const control_panel = require('./controll_panel/index.js');
+const configLoader = require('./config.js')
 const https = require('./http.js');
-const { exit } = require('process');
 
 function printHelp(){
   const help = `
   Http manipulator. An easy to use http manupulation system
-  Usage: ${process.argv[0]} [OPTIONS]
+  Usage: ${argv[0]} [OPTIONS]
   OPTIONS:
     -h | --help : Print usage message
     -c | --config-file : Path of configuration file
@@ -31,10 +34,6 @@ if(args['--help']){
 }
 
 const config_file = args['--config_file'] || '/etc/http_manipulator/config.json';
+const config = configLoader(config_file);
 
-if(!fs.existsSync(config_file)){
-  console.error(`Configuration file does not exist ar path ${config_file}`);
-  exit(-1);
-}
-
-control_panel.listen(3000);
+control_panel.listen(parseInt(config.panel_port) || 3000);

@@ -61,7 +61,7 @@ app.get('/licence',(req,res,next)=>{
 
 
 module.exports.listen = function(port) {
-    console.log("Listening for control panel");
+    console.log("Listening for control panel at port "+port);
 
     const server = app.listen(port);
     server.on('upgrade', (request, socket, head) => {

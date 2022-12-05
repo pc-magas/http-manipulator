@@ -3,6 +3,6 @@
     "usr_ssl": "/etc/http_manipulator/ssl/usr",
     "https_port": 449,
     "http_port": 80,
-    "panel_port": 3000,
+    "panel_port": 3001,
     "local_db":"/etc/http_manipulator/db.sqlite"
 }
