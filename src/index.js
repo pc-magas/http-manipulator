@@ -2,7 +2,7 @@ const control_panel = require('./controll_panel/index.js');
 
 let https;
 try {
-  https = require('node:http');
+  https = require('node:https');
 } catch (err) {
   console.log('https support is disabled!');
 }
