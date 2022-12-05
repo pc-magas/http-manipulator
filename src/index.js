@@ -1,7 +1,16 @@
 const control_panel = require('./controll_panel/index.js');
 
-control_panel.listen(3000);
+let https;
+try {
+  https = require('node:http');
+} catch (err) {
+  console.log('https support is disabled!');
+}
 
-setInterval(function(){
-    control_panel.event.emit("http",{data:"Hello"});
-},3000);
+const server = https.createServer((req,res)=>{
+
+});
+
+server.listen(449);
+
+control_panel.listen(3000);

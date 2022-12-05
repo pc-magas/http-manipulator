@@ -10,7 +10,8 @@ EXPOSE 80 \
        449 \
        3000
 
-VOLUME "/home/node/app"
+VOLUME "/home/node/app" \
+        "/var/data/certs"
 WORKDIR "/home/node/app"
 USER node
 
