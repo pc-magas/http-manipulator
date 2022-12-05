@@ -10,7 +10,6 @@
   "author": "Dimitrios Desyllas",
   "license": "MIT",
   "dependencies": {
-    "@nodelib/fs.scandir": "^2.1.5",
     "arg": "^5.0.2",
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.2",
