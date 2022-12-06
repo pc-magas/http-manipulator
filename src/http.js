@@ -8,14 +8,11 @@ try {
 
 const handle = (req,res)=>{};
 
-function createHttpsServer(db,default_key,default_cert){
+function createHttpsServer(db,default_key,default_cert,default_key){
 
-  const secureContext = {
-    
-  }
-  
-  
+  const secureContext = {}
 
+  
 
   const options = {
     SNICallback: function (domain, cb) {
@@ -31,8 +28,8 @@ function createHttpsServer(db,default_key,default_cert){
         }
     },
     // must list a default key and cert because required by tls.createServer()
-    key: fs.readFileSync('../path_to_key.pem'), 
-    cert: fs.readFileSync('../path_to_cert.crt'), 
+    key: fs.readFileSync(default_cert), 
+    cert: fs.readFileSync(default_cert), 
   };
   
   return https.createServer(options,handle);
