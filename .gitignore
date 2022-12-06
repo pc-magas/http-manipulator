@@ -2,3 +2,6 @@ node_modules
 .vscode
 *.log
 vhosts
+config
+config_vol
+src/so.js

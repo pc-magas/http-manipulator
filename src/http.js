@@ -8,20 +8,14 @@ try {
 
 const handle = (req,res)=>{};
 
-function createServer(usr_cert_path,standart_cert_path){
+function createHttpsServer(db,standart_cert_path,){
+
   const secureContext = {
-    'mydomain.com': tls.createSecureContext({
-        key: fs.readFileSync('../path_to_key1.pem', 'utf8'),
-        cert: fs.readFileSync('../path_to_cert1.crt', 'utf8'),
-        ca: fs.readFileSync('../path_to_certificate_authority_bundle.ca-bundle1', 'utf8'), // this ca property is optional
-    }),
-    'myotherdomain.com': tls.createSecureContext({
-        key: fs.readFileSync('../path_to_key2.pem', 'utf8'),
-        cert: fs.readFileSync('../path_to_cert2.crt', 'utf8'),
-        ca: fs.readFileSync('../path_to_certificate_authority_bundle.ca-bundle2', 'utf8'), // this ca property is optional
-    }),
   }
   
+  
+
+
   const options = {
     SNICallback: function (domain, cb) {
         if (secureContext[domain]) {
@@ -35,7 +29,7 @@ function createServer(usr_cert_path,standart_cert_path){
             throw new Error('No keys/certificates for domain requested');
         }
     },
-   // must list a default key and cert because required by tls.createServer()
+    // must list a default key and cert because required by tls.createServer()
     key: fs.readFileSync('../path_to_key.pem'), 
     cert: fs.readFileSync('../path_to_cert.crt'), 
   };
@@ -43,5 +37,9 @@ function createServer(usr_cert_path,standart_cert_path){
   return https.createServer(options,handle);
 }
 
+function createHttpServer(port){
+  return https.createServer(handle);
+}
 
-module.exports.createServer = createServer;
+module.exports.createHttpsServer = createHttpsServer;
+module.exports.createHttpServer = createHttpServer;

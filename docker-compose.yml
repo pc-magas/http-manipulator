@@ -14,6 +14,7 @@ services:
     volumes:
       - .:/home/node/app
       - ./config/config_dev.json:/etc/http_manipulator/config.json
+      - ./config_vol:/etc/http_manipulator
 
 networks:
   frontend:
