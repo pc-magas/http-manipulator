@@ -1,8 +1,7 @@
 FROM node:18
 
 RUN mkdir -p "/etc/http_manipulator" &&\
-    mkdir -p "/etc/http_manipulator/ssl/system" &&\
-    mkdir -p "/etc/http_manipulator/ssl/usr" &&\
+    mkdir -p "/etc/http_manipulator/ssl" &&\
     chmod 644 "/etc/http_manipulator" &&\
     chown -R node:node "/etc/http_manipulator" &&\
     echo "#!/usr/bin/env bash" > /usr/bin/entrypoint &&\

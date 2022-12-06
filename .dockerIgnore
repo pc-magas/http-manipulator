@@ -5,6 +5,6 @@ README.md
 tests
 .git
 .vscode
-config
 config_vol
 src/so.js
+config/config_dev.json

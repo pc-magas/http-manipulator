@@ -1,0 +1,7 @@
+{
+    "https_port": 449,
+    "http_port": 80,
+    "panel_port": 3000,
+    "local_db":"/etc/http_manipulator/db.sqlite",
+    "ssl_path": "/etc/http_manipulator/ssl/"
+}
