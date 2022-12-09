@@ -1,3 +1,4 @@
+const fs = require('fs');
 let https;
 
 try {
@@ -6,13 +7,36 @@ try {
   console.log('https support is disabled!');
 }
 
-const handle = (req,res)=>{};
+const handle = (req,res)=>{
+  res.writeHead(200);
+  res.end("hello world\n");
+};
 
-function createHttpsServer(db,default_key,default_cert,default_key){
+/**
+ * Create an Https server with tls cert management
+ * @param {*} db Sqlite database where ssl info is stored 
+ * @param {*} default_key Default path for generic SSL key
+ * @param {*} default_cert Default path for generic SSL cert
+ * @returns A https connection where will listen to.
+ */
+function createHttpsServer(db,default_key,default_cert){
 
   const secureContext = {}
 
-  
+  db.each("SELECT * from certs",function(err, row) {
+    if(err){
+      console.err(err)
+    }
+
+    const ssl_context = {
+      key: fs.readFileSync(row.key, 'utf8'),
+      cert: fs.readFileSync(row.cert,'utf8')
+    }
+    if(row.ca != null || (typeof row.ca == String && row.ca.trim() != "")){
+      ssl_context['ca'] = fs.readFileSync(row.ca.trim(),'utf8')
+    }
+    secureContext[row.domain] = tls.createSecureContext(ssl_context);
+  })
 
   const options = {
     SNICallback: function (domain, cb) {
@@ -28,7 +52,7 @@ function createHttpsServer(db,default_key,default_cert,default_key){
         }
     },
     // must list a default key and cert because required by tls.createServer()
-    key: fs.readFileSync(default_cert), 
+    key: fs.readFileSync(default_key), 
     cert: fs.readFileSync(default_cert), 
   };
   
