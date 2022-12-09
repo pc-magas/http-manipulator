@@ -59,8 +59,9 @@ function createHttpsServer(db,default_key,default_cert){
   return https.createServer(options,handle);
 }
 
-function createHttpServer(port){
-  return https.createServer(handle);
+function createHttpServer(){
+  const http = require('node:http');
+  return http.createServer(handle);
 }
 
 module.exports.createHttpsServer = createHttpsServer;
