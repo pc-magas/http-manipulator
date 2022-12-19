@@ -17,15 +17,15 @@ services:
       - ./config/cert.conf:/etc/http_manipulator/cert.conf
       - ./config_vol:/etc/http_manipulator
 
-  manipulator_prod:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      frontend:
-        ipv4_address: 172.21.0.3
-    volumes:
-      - ./config_vol_prod:/etc/http_manipulator
+  # manipulator_prod:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   networks:
+  #     frontend:
+  #       ipv4_address: 172.21.0.3
+  #   volumes:
+  #     - ./config_vol_prod:/etc/http_manipulator
 
 networks:
   frontend:

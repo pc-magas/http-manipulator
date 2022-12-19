@@ -1,11 +1,6 @@
 const fs = require('fs');
-let https;
-
-try {
-  https = require('node:https');
-} catch (err) {
-  console.log('https support is disabled!');
-}
+const http = require('node:http');
+let https = require('node:https');
 
 const handle = (req,res)=>{
   res.writeHead(200);
@@ -59,8 +54,8 @@ function createHttpsServer(db,default_key,default_cert){
   return https.createServer(options,handle);
 }
 
-function createHttpServer(){
-  const http = require('node:http');
+function createHttpServer(db){
+
   return http.createServer(handle);
 }
 
