@@ -21,6 +21,7 @@ function createTables(db){
             exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1
         );
         
+        DROP TRIGGER IF EXISTS remove_http_https;
         CREATE TRIGGER remove_http_https AFTER INSERT ON redirect
         BEGIN
             UPDATE redirect 
@@ -28,26 +29,20 @@ function createTables(db){
             WHERE rowid=NEW.rowid;
         END;
 
+        DROP TRIGGER IF EXISTS remove_http_https_update;
         CREATE TRIGGER remove_http_https_update AFTER UPDATE ON redirect
         BEGIN
             UPDATE redirect 
             SET url_from = REPLACE(REPLACE(NEW.url_from,'http://',''),'https://','') 
             WHERE rowid=NEW.rowid;
         END;
-
-        create table IF NOT EXTSTS reverse_proxy_forward (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            from TEXT not null,
-            from_is_ip INTEGER not null CHECK(pType IN (0,1)) DEFAULT 1,
-            to TEXT not null,
-            to_is_ip INTEGER not null CHECK(pType IN (0,1)) DEFAULT 1,
-            cloaked_domain TEXT null
-        )
     `
     db.exec(sql);
 }
 
 module.exports = function(db_path){
+
+    console.log(db_path);
     const db = new sqlite3.Database(db_path,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err) => {
         if (err) {
             console.log("Getting error " + err);

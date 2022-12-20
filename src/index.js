@@ -37,13 +37,13 @@ if(args['--help']){
 const config_file = args['--config_file'] || '/etc/http_manipulator/config.json';
 const config = configLoader(config_file);
 
-const db_path = config.local_db || '/etc/http_manipulator/db.sqlite';
+const db_path = config.local_db;
 const database = db(db_path);
 
 const http = http_lib.createHttpServer();
 http.listen(parseInt(config.http_port)||80);
 
-const ssl_path = config['ssl_path'] || "/etc/http_manipulator/ssl/"
+const ssl_path = config['ssl_path']
 
 const default_cert = resolve(ssl_path,'default.cert')
 const default_key = resolve(ssl_path,'default.key')
