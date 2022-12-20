@@ -1,7 +1,8 @@
 const db = require('../../src/db.js');
-const config = require('../../src/db.js');
+const configLoader = require('../../src/config.js')
 const seeder = require('./seeds.js');
 
+const config = configLoader();
 const db_path = config.local_db || '/etc/http_manipulator/db.sqlite';
 const database = db(db_path);
 
@@ -18,18 +19,34 @@ Run either:
 if(args.count == 0){
     console.error("You must provide seeders to be run");
     console.log(help)
-    exit(-1);
+    process.exit(-1);
 }
 
 
 args.forEach((item)=>{
-    let success = false;
-    process.stdout.write(`RUNNING ${item}......`)
+    process.stdout.write(`RUNNING \x1b[36m${item}\x1b[0m......`)
+
     if(!seeder[item]){
-        process.stdout.write("[\x1b[32mMISSING\x1b[0m ]\n")
-        success||=false;
+        process.stdout.write("[\x1b[31mMISSING\x1b[0m ]\n")
         return;
     }
-    seeder[item](database);
-    process.stdout.write("[\x1b[31m SUCCESS\x1b[0m ] \n")
-});
+    
+    seeder[item](database,function(error){
+        if(!error){
+            process.stdout.write("[\x1b[32m SUCCESS\x1b[0m ] \n")            
+            return;
+        }
+        
+        process.stdout.write("[\x1b[31m ERROR\x1b[0m ] \n")
+        console.log();
+        console.error("#".repeat(5));
+        console.error(`ERROR on Seeder \x1b[36m${item}\x1b[0m`);
+        console.error(error);
+        console.error("#".repeat(5));
+        process.exit(-1);
+    });
+})
+
+
+
+
