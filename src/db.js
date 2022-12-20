@@ -42,7 +42,6 @@ function createTables(db){
 
 module.exports = function(db_path){
 
-    console.log(db_path);
     const db = new sqlite3.Database(db_path,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err) => {
         if (err) {
             console.log("Getting error " + err);
