@@ -6,7 +6,8 @@ EXPOSE 3000 \
 
 COPY . /usr/src/app/
 
-RUN mv /usr/src/app/config /etc/http_manipulator &&\
+RUN rm -rf /usr/src/app/utils &&\
+    mv /usr/src/app/config /etc/http_manipulator &&\
     mkdir -p "/etc/http_manipulator/ssl" &&\
     chmod 644 "/etc/http_manipulator" &&\
     chown -R node:node "/etc/http_manipulator" &&\
