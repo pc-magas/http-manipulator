@@ -21,8 +21,18 @@ function createTables(db){
             exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1
         );
         
-        CREATE TRIGGER remove_http_https BEFORE INSERT,UPDATE OF column url_from ON redirect BEGIN 
-            NEW.url_from=REPLACE(REPLACE(NEW.url_from,"http:\\\\",""),"https:\\\\","")  
+        CREATE TRIGGER remove_http_https AFTER INSERT ON redirect
+        BEGIN
+            UPDATE redirect 
+            SET url_from = REPLACE(REPLACE(NEW.url_from,'http://',''),'https://','') 
+            WHERE rowid=NEW.rowid;
+        END;
+
+        CREATE TRIGGER remove_http_https_update AFTER UPDATE ON redirect
+        BEGIN
+            UPDATE redirect 
+            SET url_from = REPLACE(REPLACE(NEW.url_from,'http://',''),'https://','') 
+            WHERE rowid=NEW.rowid;
         END;
 
         create table IF NOT EXTSTS reverse_proxy_forward (
