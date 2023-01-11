@@ -3,7 +3,7 @@
  */
 const seeders = {
     "redirect_http":function(database,err_callback){
-        // eithwet http or https at url_from is truncated via a trigger 
+        // either http or https at url_from is truncated via a trigger 
         database.exec(`
             INSERT INTO redirect (url_from,url_to,method,http_status_code,use_in_http,exact_match) VALUES
             ('http://google.com/mytest','http://yahoo.com','GET',301,1,1),

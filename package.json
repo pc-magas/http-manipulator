@@ -4,7 +4,7 @@
   "description": "A simple reserve proxy and http server for mocking and manipulating http requests",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --verbose ./tests",
     "start": "node src/index.js"
   },
   "author": "Dimitrios Desyllas",
@@ -21,6 +21,10 @@
     "ws": "^8.11.0"
   },
   "devDependencies": {
-    "jest": "^29.3.1"
-  }
+    "jest": "^29.3.1",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testMatch": ["**/*.jest.js","*.jest.js","**/*.test.js","*.test.js"]
+  }    
 }
