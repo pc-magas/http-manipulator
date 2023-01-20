@@ -1,4 +1,4 @@
-module.exports.redirectHttpToHttps = (db,req,res)=>{
+module.exports.redirectHttpToHttps = (db,use_in_http,req,res)=>{
 
     if(res.writableEnded){
         return;
