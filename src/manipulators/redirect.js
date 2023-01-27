@@ -5,7 +5,12 @@ module.exports = function(db, use_https=false){
 
     app.use(function(req,res,next){
 
-        const url = req.headers.host+req.url;
+        let url = req.headers.host+req.url;
+
+        if(req.url == '/'){
+            url = req.headers.host;
+        }
+    
 
         const where_http = use_https?" use_in_https = 1":" use_in_http = 1";
         let sql = `
@@ -27,18 +32,23 @@ module.exports = function(db, use_https=false){
         const stmt = db.prepare(sql);
         const row = stmt.get({'incomming_url':url,'method':req.method});
 
-        
         if(typeof row == 'undefined'){
             next();
             return;
         }
 
-        res.setHeader('Location', row.url_to)
+
+        const url_sane = row.url_to.replace(/^(https?:|)\/\//,'');
+
+        if(url_sane == req.headers.host){
+            res.setHeader('Location', "https://"+url)
+          
+        } else {
+            res.setHeader('Location', row.url_to)
+        }
+
         res.writeHead(row.http_status_code);
         res.end();   
-        
-
-        
     });
 
     return app;
