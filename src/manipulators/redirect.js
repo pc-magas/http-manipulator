@@ -1,26 +1,45 @@
-module.exports.redirectHttpToHttps = (db,use_in_http,req,res)=>{
+const connect = require('connect');
 
-    if(res.writableEnded){
-        return;
-    }
+module.exports = function(db, use_https=false){
+    const app = connect();
 
-    // const method = req.method.trim().toLowerCase();
-    // const fullUrl = req.get('host') + req.originalUrl;
-    // const url_host_only = req.get('host');
-   
-    // const sql = "SELECT * from redirect where use_in_http = 1 and exact_match = 1 and url_from = ? and exact_match=1 LIMIT 1";
-    // const sqlNonExact = "SELECT * from redirect where use_in_http = 1 and exact_match = 1 and url_from = ? and exact_match=1 LIMIT 1"
+    app.use(function(req,res,next){
 
-    // db.all(sql,fullUrl,function(err, rows) {
-    //     if(err){
-    //         console.error(err)
-    //     }
-    //     console.log(rows);
-    // });
-    console.log("Here");
-    res.writeHead(301, {
-        location: "https://google.com",
-      });
-    res.end();
-  
-}
+        const url = req.headers.host+req.url;
+
+        const where_http = use_https?" use_in_https = 1":" use_in_http = 1";
+        let sql = `
+            select 
+                * 
+            from 
+                redirect 
+            where 
+                (
+                    (:incomming_url = url_from and exact_match = 1)
+                    or (instr(:incomming_url,url_from) <> 0 and exact_match = 0)
+                )
+                and "method" = :method 
+                and ${where_http}
+            order by exact_match desc, LENGTH(REPLACE(url_from,:incomming_url,'')) desc
+            limit 1
+        `;
+
+        const stmt = db.prepare(sql);
+        const row = stmt.get({'incomming_url':url,'method':req.method});
+
+        
+        if(typeof row == 'undefined'){
+            next();
+            return;
+        }
+
+        res.setHeader('Location', row.url_to)
+        res.writeHead(row.http_status_code);
+        res.end();   
+        
+
+        
+    });
+
+    return app;
+};
