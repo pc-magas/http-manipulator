@@ -18,7 +18,9 @@ function createTables(db){
             http_status_code INTEGER not null CHECK( http_status_code IN (300,301,302,304,304,308,307) ) DEFAULT 301,
             use_in_https  INTEGER not null CHECK(use_in_https IN (0,1)) DEFAULT 0,
             use_in_http  INTEGER not null CHECK(use_in_http IN (0,1)) DEFAULT 1,
-            exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1
+            exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1,
+            UNIQUE(url_from,method,http_status_code,use_in_http,exact_match),
+            UNIQUE(url_from,method,http_status_code,use_in_https,exact_match)
         );
         
         DROP TRIGGER IF EXISTS remove_http_https;
