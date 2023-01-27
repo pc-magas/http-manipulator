@@ -1,0 +1,7 @@
+{
+    "https_port": 443,
+    "http_port": 80,
+    "panel_port": 3000,
+    "local_db":"./config_vol/db.sqlite",
+    "ssl_path": "./config_vol/ssl/"
+}
