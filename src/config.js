@@ -8,7 +8,7 @@ const fs = require('fs');
 function loadConfig(path) {
     if(!fs.existsSync(path) && !fs.existsSync('/etc/http_manipulator/config.json')){
         console.error(`Configuration file does not exist ar path ${path}`);
-        exit(-1);
+        process.exit(-1);
     } else if(!fs.existsSync(path) && fs.existsSync('/etc/http_manipulator/config.json')){
         path='/etc/http_manipulator/config.json';
     }
