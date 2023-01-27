@@ -1,11 +1,9 @@
 const fs = require('fs');
 const http = require('node:http');
 let https = require('node:https');
+const connect = require('connect');
 
-const handle = (req,res)=>{
-  res.writeHead(200);
-  res.end("hello world\n");
-};
+const redirect = require('./manipulators/redirect.js')
 
 /**
  * Create an Https server with tls cert management
@@ -18,11 +16,8 @@ function createHttpsServer(db,default_key,default_cert){
 
   const secureContext = {}
 
-  db.each("SELECT * from certs",function(err, row) {
-    if(err){
-      console.err(err)
-    }
-
+  const certs = db.prepare("SELECT * from certs").all();
+  certs.forEach(function(row) {
     const ssl_context = {
       key: fs.readFileSync(row.key, 'utf8'),
       cert: fs.readFileSync(row.cert,'utf8')
@@ -51,12 +46,18 @@ function createHttpsServer(db,default_key,default_cert){
     cert: fs.readFileSync(default_cert), 
   };
   
-  return https.createServer(options,handle);
+  const app = connect();
+  app.use(redirect(db,true));
+
+  return https.createServer(options,app);
 }
 
 function createHttpServer(db){
 
-  return http.createServer(handle);
+  const app = connect();
+  app.use(redirect(db,false));
+
+  return http.createServer(app);
 }
 
 module.exports.createHttpsServer = createHttpsServer;

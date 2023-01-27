@@ -26,7 +26,8 @@ const args = arg({
 	'--help': Boolean,
   '-h':'--help',
 	'--config_file': String,
-  '-c':'--config-file',
+  '-c':'--config_file',
+  '--config':'--config_file'
 });
 
 if(args['--help']){
