@@ -58,6 +58,16 @@ app.get('/licence',(req,res,next)=>{
     res.render('licence');
 })
 
+app.get('/settings',(req,res,next)=>{
+    res.render('settings',{
+        title:'Setings',
+        js: [],
+        css: [
+            '/static/css/sidepanel.css'
+        ],
+        baseUrl: `${req.protocol}://${req.get('host')}`
+    });
+});
 
 
 module.exports.listen = function(port) {
