@@ -14,10 +14,10 @@
     "watch": [
       "views",
       "static",
-      "app"
+      "src"
     ],
     "env": {
       "NODE_ENV": "development"
     },
-    "ext": "js,json,njk"
+    "ext": "js,json,html,css,njk"
   }

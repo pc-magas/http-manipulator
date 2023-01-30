@@ -1,9 +1,22 @@
 .navigation-left {
     border-left: 1px solid #333;
-    padding-left: 1px;
 }
 
 .navigation-left * {
-    margin-left: 1px;
     list-style: none;
+    padding: 0px;
+}
+
+.navigation-left .main_nav {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.nav_header {
+    padding-left: 1em;
+    background-color: rgb(180,180,180);
+}
+.nav_menu {
+    padding-left: 2em;
+    background-color: #ddd;
 }

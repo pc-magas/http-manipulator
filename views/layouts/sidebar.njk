@@ -7,13 +7,13 @@
 
 {% block body %}
 <div class="d-flex flex-row justify-content-center mb-1">
-    <main class="w-50 ml-3">
+    <main class="w-50 ml-3 p-1">
         {% block main %}
         {% endblock %}
     </main>
-    <aside id="settings_nav" class="w-25 navigation-left">
+    <nav class="w-25 navigation-left">
        {% block sidebar%}
        {% endblock %}
-    </aside>
+    </nav>
 </div>
 {% endblock %}

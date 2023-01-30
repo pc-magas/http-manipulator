@@ -13,17 +13,56 @@
 {% block main %}
     <div id="tabs" class="pages">
         <section class="page"  id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
-            Redirect Link
+            <h1>Advanced Redirecting</h1>
+            <form class="ajax_form" method="post" action="/redirect/url">
+                <div class="mb-3">
+                    <label for="url1" class="form-label">Url From</label>
+                    <input type="text" name="url_from" class="form-control" id="url1" placeholder="https://example.com">
+                </div>
+                <div class="mb-3">
+                    <label for="url2" class="form-label">Url From</label>
+                    <input type="text" name="url_to" class="form-control" id="url2" placeholder="https://example.com">
+                </div>
+                <div class="mb-3">
+                    
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" name="exact_match" type="checkbox" id="exact_match">
+                    <label class="form-check-label" for="exact_match">
+                        Exact Match
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" name="use_for_http" type="checkbox" id="use_for_http">
+                    <label class="form-check-label" for="use_for_http">
+                       Use in incomming http calls
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" name="use_for_https" type="checkbox" id="use_for_https">
+                    <label class="form-check-label" for="use_for_https">
+                       Use in incomming https calls
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
         </section>
         <section class="page" data-active="true" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
-            Redirect Https
+            <h1>Redirect to Https</h1>
+            <form class="ajax_form" method="post" action="/redirect/https">
+                <div class="mb-3">
+                    <label for="url1" class="form-label">Url where will be redirected into https</label>
+                    <input type="text" name="base_url" class="form-control" id="url1" placeholder="https://example.com">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
         </section>
     <div>
 {% endblock %}
 
 {% block sidebar%}
-<nav class="navigation_column" arial-label="Settings Menu">   
-   <ul>
+<ul class="main_nav">
     <li class="nav_header">Redirect</li>
     <li class="nav_menu">
         <ul>
@@ -31,12 +70,20 @@
             <li><a id="redirect_https_link" class="page_link" href="#redirect_url">Redirect to another page</a></li>
         </ul>
     </li>
+    
+   <!-- <li class="nav_header">SMS Gateway Mocking</li>
+    <li class="nav_menu">
+        <ul>
+            <li><a id="redirect_url_link" class="page_link" href="#redirect_https">Infobip</a></li>
+            <li><a id="redirect_https_link" class="page_link" href="#redirect_url">Twilio</a></li>
+        </ul>
+    </li> -->
+
     <li class="nav_header">MISC</li>
-    <li>
+    <li class="nav_menu">
         <ul>
             <li>Upload SSL Certificate</li>
         </ul>
     </li>
 </ul>
-</nav>
 {% endblock %}

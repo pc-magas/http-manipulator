@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --verbose ./tests",
     "start": "node src/index.js",
-    "dev_docker": "nodemon  -e js,html,nj src/index.js",
+    "dev_docker": "nodemon src/index.js",
     "dev_local": "nodemon src/index.js --config=./config/config_local.json"
   },
   "author": "Dimitrios Desyllas",
