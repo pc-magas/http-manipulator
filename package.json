@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest --verbose ./tests",
     "start": "node src/index.js",
-    "start-local": "node src/index.js --config=./config/config_local.json"
+    "dev_docker": "nodemon  -e js,html,nj src/index.js",
+    "dev_local": "nodemon src/index.js --config=./config/config_local.json"
   },
   "author": "Dimitrios Desyllas",
   "license": "MIT",
@@ -24,7 +25,8 @@
   },
   "devDependencies": {
     "jest": "^29.3.1",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "nodemon": "^2.0.20"
   },
   "jest": {
     "testMatch": [

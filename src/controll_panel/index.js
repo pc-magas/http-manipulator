@@ -25,7 +25,6 @@ wsServer.on('connection', function connection(ws) {
 
 wsServer.on('message',function connection(ws) {
     console.log("Websocket received a message");
-
 });
 
 
@@ -58,12 +57,8 @@ app.get('/licence',(req,res,next)=>{
 app.get('/settings',(req,res,next)=>{
     nunjunks.render('settings.njk', {
         title:'Setings',
-        js: [
-            'static/js/settings.js'
-        ],
-        css: [
-            '/static/css/sidepanel.css'
-        ],
+        js: [],
+        css: [],
         baseUrl: `${req.protocol}://${req.get('host')}`
     },(err,response)=>{
         res.send(response);
