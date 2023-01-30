@@ -1,31 +1,5 @@
-{% extends "./layouts/main.html" %}
+{% extends "./layouts/sidebar.njk" %}
 
-{% block body %}
-<div class="d-flex flex-row justify-content-center mb-1">
-    <main id="main_tabs" class="w-50 ml-3 tab-content">
-        <section id="redirect_url" class="tab-pane active" role="tabpanel" aria-labelledby="redirect_url_link">
-            lalala
-        </section>
-        <section id="redirect_https" class="tab-pane" role="tabpanel" aria-labelledby="redirect_https_link">
-            lalala2
-        </section>
-    </main>
-    <nav id="settings_nav" class="w-25 navigation-left">
-        <ul>
-            <li>
-                <h5>Redirect</h5>
-                <ul>
-                    <li><a id="redirect_url_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_url">Redirect Url to Https</a></li>
-                    <li><a id="redirect_https_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_https">Redirect to another page</a></li>
-                </ul>
-            </li>
-            <li>
-                <h5>MISC</h5>
-                <ul>
-                    <li>Upload SSL Certificate</li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-</div>
+{% block main %}
+    lalalala
 {% endblock %}

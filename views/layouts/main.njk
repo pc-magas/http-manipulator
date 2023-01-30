@@ -58,14 +58,18 @@
             text-align: center;
         }
     </style>
-    <link href="/static/css/boostrap/bootstrap.css" rel="stylesheet" type="text/css" >
-    <link href="/static/css/boostrap/icon/font/bootstrap-icons.css" rel="stylesheet" type="text/css" >
+    <link href="/static/css/boostrap/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="/static/css/boostrap/icon/font/bootstrap-icons.css" rel="stylesheet" type="text/css" />
+    {% block cssblock %}
+    {% endblock %}
     {% for stylesheet in css %}
         <link href="{{stylesheet}}" rel="stylesheet" type="text/css" >
     {% endfor %}
 
     <script src="/static/js/jquery/jquery.min.js"></script>
     <script src="/static/js/boostrap/bootstrap.min.js"></script>
+    {% block jsblock %}
+    {% endblock %}
     {% for script in js %}
         <script src="{{script}}"></script>
     {% endfor %}
