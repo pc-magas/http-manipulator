@@ -1,5 +1,34 @@
 {% extends "./layouts/sidebar.njk" %}
 
+{% block jsblock %}
+    <script src='static/js/settings.js'></script>
+{% endblock %}
+
 {% block main %}
-    lalalala
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
+            Redirect Link
+        </div>
+        <div class="tab-pane fade show" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
+            Redirect Https
+        </div>
+    <div>
+{% endblock %}
+
+{% block sidebar%}
+<ul>
+    <li>
+        <h5>Redirect</h5>
+        <ul>
+            <li><a id="redirect_url_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_url">Redirect Url to Https</a></li>
+            <li><a id="redirect_https_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_https">Redirect to another page</a></li>
+        </ul>
+    </li>
+    <li>
+        <h5>MISC</h5>
+        <ul>
+            <li>Upload SSL Certificate</li>
+        </ul>
+    </li>
+</ul>
 {% endblock %}

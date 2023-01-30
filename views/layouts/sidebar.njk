@@ -7,26 +7,13 @@
 
 {% block body %}
 <div class="d-flex flex-row justify-content-center mb-1">
-    <main id="main_tabs" class="w-50 ml-3 tab-content">
+    <main class="w-50 ml-3">
         {% block main %}
         {% endblock %}
     </main>
-    <nav id="settings_nav" class="w-25 navigation-left">
-        <ul>
-            <li>
-                <h5>Redirect</h5>
-                <ul>
-                    <li><a id="redirect_url_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_url">Redirect Url to Https</a></li>
-                    <li><a id="redirect_https_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_https">Redirect to another page</a></li>
-                </ul>
-            </li>
-            <li>
-                <h5>MISC</h5>
-                <ul>
-                    <li>Upload SSL Certificate</li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+    <aside id="settings_nav" class="w-25 navigation-left">
+       {% block sidebar%}
+       {% endblock %}
+    </aside>
 </div>
 {% endblock %}
