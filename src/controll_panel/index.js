@@ -1,27 +1,20 @@
 const express = require('express');
 const ws = require('ws');
 const path = require('path');
-const express_handlebars = require('express-handlebars');
+// const express_handlebars = require('express-handlebars');
 const EventEmitter = require('node:events');
+
+const nunjunks = require('nunjucks');
+
 
 const app = express();
 const wsServer = new ws.WebSocketServer({ noServer: true });
 
 const myEmitter = new EventEmitter();
 
-
-const hbs = express_handlebars.create({
-    // Specify helpers which are only registered on this instance.
-    helpers: {
-        // foo() { return 'FOO!'; },
-        // bar() { return 'BAR!'; }
-    },
-    defaultLayout: 'main'
+nunjunks.configure(path.join(__dirname,'/../../views'),{
+    autoescape:  true,
 });
-
-app.engine('handlebars', hbs.engine); 
-app.set('view engine', 'handlebars');
-app.set('views',path.join(__dirname,'/../../views'));
 
 wsServer.on('connection', function connection(ws) {
     console.log("Websocket connected");
@@ -45,27 +38,35 @@ app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modu
 
 
 app.get('/', (req, res, next) => {
-    res.render('home',{
-        title:'Homepage',
-        js: [
-            '/static/js/home.js'
-        ],
-        baseUrl: `${req.protocol}://${req.get('host')}`
-    });
+    nunjunks.render('home.njk', {
+            title:'Homepage',
+            js: [
+                '/static/js/home.js'
+            ],
+            baseUrl: `${req.protocol}://${req.get('host')}`
+    },(err,response)=>{
+        res.send(response);
+    })
 });
 
 app.get('/licence',(req,res,next)=>{
-    res.render('licence');
+    nunjunks.render('licence.njk',{},(err,response)=>{
+        res.send(response);
+    });
 })
 
 app.get('/settings',(req,res,next)=>{
-    res.render('settings',{
+    nunjunks.render('settings.njk', {
         title:'Setings',
-        js: [],
+        js: [
+            'static/js/settings.js'
+        ],
         css: [
             '/static/css/sidepanel.css'
         ],
         baseUrl: `${req.protocol}://${req.get('host')}`
+    },(err,response)=>{
+        res.send(response);
     });
 });
 
