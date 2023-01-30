@@ -1,34 +1,42 @@
 {% extends "./layouts/sidebar.njk" %}
 
+{% block cssblock%}
+    {{ super() }}
+    <link href="/static/css/page.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
 {% block jsblock %}
-    <script src='static/js/settings.js'></script>
+    {{ super() }}
+    <script src='/static/js/settings.js'></script>
 {% endblock %}
 
 {% block main %}
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
+    <div id="tabs" class="pages">
+        <section class="page"  id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
             Redirect Link
-        </div>
-        <div class="tab-pane fade show" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
+        </section>
+        <section class="page" data-active="true" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
             Redirect Https
-        </div>
+        </section>
     <div>
 {% endblock %}
 
 {% block sidebar%}
-<ul>
-    <li>
-        <h5>Redirect</h5>
+<nav class="navigation_column" arial-label="Settings Menu">   
+   <ul>
+    <li class="nav_header">Redirect</li>
+    <li class="nav_menu">
         <ul>
-            <li><a id="redirect_url_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_url">Redirect Url to Https</a></li>
-            <li><a id="redirect_https_link" class="tab_link" role="tab" data-toggle="tab" href="#redirect_https">Redirect to another page</a></li>
+            <li><a id="redirect_url_link" class="page_link" href="#redirect_https">Redirect Url to Https</a></li>
+            <li><a id="redirect_https_link" class="page_link" href="#redirect_url">Redirect to another page</a></li>
         </ul>
     </li>
+    <li class="nav_header">MISC</li>
     <li>
-        <h5>MISC</h5>
         <ul>
             <li>Upload SSL Certificate</li>
         </ul>
     </li>
 </ul>
+</nav>
 {% endblock %}

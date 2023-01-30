@@ -20,5 +20,4 @@ VOLUME "/home/node/app" \
 WORKDIR "/home/node/app"
 USER node
 
-ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD [ "npm", "run", "dev_docker" ]
