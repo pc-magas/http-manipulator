@@ -21,12 +21,14 @@
     "handlebars": "^4.7.7",
     "jquery": "^3.6.1",
     "nunjucks": "^3.2.3",
+    "serve-static": "^1.15.0",
+    "urlrouter": "^0.5.4",
     "ws": "^8.11.0"
   },
   "devDependencies": {
     "jest": "^29.3.1",
-    "supertest": "^6.3.3",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "supertest": "^6.3.3"
   },
   "jest": {
     "testMatch": [

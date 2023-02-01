@@ -1,15 +1,11 @@
 $(function(){
-    $(".page_link").on('click',function(e){
-        e.preventDefault();
-        const source = e.target || e.srcElement;
-        const pageId = $(source).attr('href');
-        console.log("Here");
-        showPage(pageId);
+
+    $("#http_method").on('change',function(event){
+        const source = event.target || event.srcElement;
+        const http_method = $(source).val();
+
+        if(http_method != 'GET'){
+            $("#status").val('308');
+        }
     });
 });
-
-function showPage(id){
-    const children = $(id).parent().children(".page");
-    children.each((i,elem)=>$(elem).attr('data-active',false));
-    $(id).attr('data-active',true);
-}
