@@ -1,20 +1,14 @@
-{% extends "./layouts/sidebar.njk" %}
-
-{% block cssblock%}
-    {{ super() }}
-    <link href="/static/css/page.css" rel="stylesheet" type="text/css" />
-{% endblock %}
+{% extends "../layouts/settings.njk" %}
 
 {% block jsblock %}
     {{ super() }}
     <script src='/static/js/settings.js'></script>
 {% endblock %}
 
-{% block main %}
-    <div id="tabs" class="pages">
+{% block settings_main %}
         <section class="page"  id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
             <h1>Advanced Redirecting</h1>
-            <form class="ajax_form" method="post" action="/redirect/advanced">
+            <form class="ajax_form" method="post" action="settings/redirect/advanced">
                 <div class="mb-3">
                     <label for="url1" class="form-label">From</label>
                     <input type="text" name="url_from" class="form-control" id="url1" placeholder="https://example.com">
@@ -65,16 +59,4 @@
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </section>
-        {# <section class="page" data-active="true" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
-            <h1>Redirect to Https</h1>
-            <form class="ajax_form" method="post" action="/redirect/https">
-                <div class="mb-3">
-                    <label for="url1" class="form-label">Url where will be redirected into https</label>
-                    <input type="text" name="base_url" class="form-control" id="url1" placeholder="https://example.com">
-                </div>
-
-                <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-        </section> #}
-    <div>
 {% endblock %}

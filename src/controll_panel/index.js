@@ -2,23 +2,19 @@ const ws = require('ws');
 const path = require('path');
 const EventEmitter = require('node:events');
 
-// const express = require('express');
-const connect = require('connect');
-const urlrouter = require('urlrouter');
-const serveStatic = require('serve-static');
+const express = require('express');
 
+const {getBaseUrl} = require('../http_utils');
 const nunjunks = require('./views');
 
+const app = express();
 
-// const app = express();
-const app = connect();
+app.use('/static',express.static(path.join(__dirname,'/../../static')));
+app.use('/static/css/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/css')));
+app.use('/static/css/boostrap/icon/',express.static(path.join(__dirname,'/../../node_modules/bootstrap-icons')));
+app.use('/static/js/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/js')));
 
-app.use('/static',serveStatic(path.join(__dirname,'/../../static')));
-app.use('/static/css/boostrap',serveStatic(path.join(__dirname,'/../../node_modules/bootstrap/dist/css')));
-app.use('/static/css/boostrap/icon/',serveStatic(path.join(__dirname,'/../../node_modules/bootstrap-icons')));
-app.use('/static/js/boostrap',serveStatic(path.join(__dirname,'/../../node_modules/bootstrap/dist/js')));
-
-app.use('/static/js/jquery',serveStatic(path.join(__dirname,'/../../node_modules/jquery/dist')));
+app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modules/jquery/dist')));
 
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;
@@ -26,14 +22,15 @@ const getProtocol = (req) => {
     return req.secure ? 'https':'http';
 }
 
-const router = urlrouter(function (app) {
+// const router = urlrouter(function (app) {
+
     app.get('/', (req, res, next) => {
         nunjunks.render('home.njk', {
                 title:'Homepage',
                 js: [
                     '/static/js/home.js'
                 ],
-                baseUrl: `${getProtocol(req)}://${req.headers.host}`
+                baseUrl: getBaseUrl(req)
         },(err,response)=>{
             res.end(response);
         })
@@ -44,9 +41,11 @@ const router = urlrouter(function (app) {
             res.end(response);
         });
     })
-});
 
-app.use(router);
+    const redirect = require('./redirect_settings');
+    redirect(app);
+// });
+
 
 const wsServer = new ws.WebSocketServer({ noServer: true });
 const myEmitter = new EventEmitter();

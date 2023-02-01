@@ -1,7 +1,0 @@
-.page[data-active=true] {
-    display: inherit;
-}
-
-.page{
-    display: none;
-}

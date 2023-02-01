@@ -1,91 +1,27 @@
-{% extends "../layouts/settings.njk" %}
+{% extends "./sidebar.njk" %}
 
 {% block cssblock%}
     {{ super() }}
-    <link href="/static/css/page.css" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block jsblock %}
     {{ super() }}
-    <script src='/static/js/settings.js'></script>
 {% endblock %}
 
-{% block main %}
+{% block main%}
     <div id="tabs" class="pages">
-        <section class="page"  id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
-            <h1>Advanced Redirecting</h1>
-            <form class="ajax_form" method="post" action="/redirect/advanced">
-                <div class="mb-3">
-                    <label for="url1" class="form-label">From</label>
-                    <input type="text" name="url_from" class="form-control" id="url1" placeholder="https://example.com">
-                </div>
-                <div class="mb-3">
-                    <label for="url2" class="form-label">To</label>
-                    <input type="text" name="url_to" class="form-control" id="url2" placeholder="https://example.com">
-                </div>
-                <div class="mb-3 row">
-                    <div class="col">
-                        <select name="http_method" id="method" class="form-select"  size="3" aria-label="http method" multiple>
-                            <option value="GET">GET</option>
-                            <option value="POST">POST</option>
-                            <option value="PUT">PUT</option>
-                            <option value="PATCH">PATCH</option>
-                            <option value="DELETE">DELETE</option>
-                        </select>
-                    </div>
-                     <div class="col">
-                        <select class="form-select" name="status" aria-label="http response status">
-                            <option selected>Http Status</option>
-                            <option value="301">301 Moved Permanently</option>
-                            <option value="302">302 Temporary Redirect</option>
-                            <option value="308">308 Permanent Redirect</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-check col">
-                        <input class="form-check-input" name="exact_match" type="checkbox" id="exact_match">
-                        <label class="form-check-label" for="exact_match">
-                            Exact Match
-                        </label>
-                    </div>
-                    <div class="form-check col">
-                        <input class="form-check-input" name="use_for_http" type="checkbox" id="use_for_http">
-                        <label class="form-check-label" for="use_for_http">
-                        Use in incomming http calls
-                        </label>
-                    </div>
-                    <div class="form-check col">
-                        <input class="form-check-input" name="use_for_https" type="checkbox" id="use_for_https">
-                        <label class="form-check-label" for="use_for_https">
-                        Use in incomming https calls
-                        </label>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-        </section>
-        <section class="page" data-active="true" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
-            <h1>Redirect to Https</h1>
-            <form class="ajax_form" method="post" action="/redirect/https">
-                <div class="mb-3">
-                    <label for="url1" class="form-label">Url where will be redirected into https</label>
-                    <input type="text" name="base_url" class="form-control" id="url1" placeholder="https://example.com">
-                </div>
+        {% block settings_main%}
+        {%endblock%}
 
-                <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-        </section>
-    <div>
-{% endblock %}
-
+    </div>
+{%endblock%}
 {% block sidebar%}
 <ul class="main_nav">
     <li class="nav_header">Redirect</li>
     <li class="nav_menu">
         <ul>
-            <li><a id="redirect_url_link" class="page_link" href="#redirect_https">Redirect Url to Https</a></li>
-            <li><a id="redirect_https_link" class="page_link" href="#redirect_url">Advanced Redirecting</a></li>
+            <li><a id="redirect_url_link" class="page_link" href="/settings/redirect/https">Redirect Url to Https</a></li>
+            <li><a id="redirect_https_link" class="page_link" href="/settings/redirect/advanced">Advanced Redirecting</a></li>
         </ul>
     </li>
     
