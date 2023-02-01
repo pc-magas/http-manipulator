@@ -2,7 +2,18 @@
 
 {% block jsblock %}
     {{ super() }}
-    <script src='/static/js/settings.js'></script>
+    <script>
+        $('.dropdown_input').on('click', function(e){
+            console.log("Here");
+            const source = e.target || e.srcElement;
+            const idToChangeDisplayVal = $(source).attr('data-handle');
+            const inputElement = $(source).attr('data-input');
+            const value = $(source).attr('value')
+            $(idToChangeDisplayVal).text(value);
+            $(inputElement).value(value);
+        });
+
+    </script>
 {% endblock %}
 
 {% block main %}
@@ -10,10 +21,19 @@
             <h1>Redirect to Https</h1>
             <form class="ajax_form" method="post" action="settings/redirect/https">
                 <div class="mb-3">
-                    <label for="url1" class="form-label">Url where will be redirected into https</label>
-                    <input type="text" name="base_url" class="form-control" id="url1" placeholder="https://example.com">
+                    <div class="input-group">
+                        <button id="http_method" class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">HttpMethod</button>
+                        <ul class="dropdown-menu">
+                            <li><button type="button" class="dropdown_input dropdown-item" value="GET" data-input="http_method_val" data-handle="http_method" >GET</button></li>
+                            <li ><button type="button" class="dropdown_input dropdown-item" value="POST" data-input="http_method_val" data-handle="http_method">POST</button></li>
+                            <li ><button type="button" class="dropdown-item dropdown_input" value="PUT" data-input="http_method_val" data-handle="http_method">PUT</button></li>
+                            <li  ><button type="button" class="dropdown-item dropdown_input" value="PATCH" data-input="http_method_val" data-handle="http_method">PATCH</button></li>
+                            <li ><button type="button" class="dropdown-item dropdown_input" value="DELETE" data-input="http_method_val" data-handle="http_method">DELETE</button></li>
+                        </ul>
+                        <input type="text" name="base_url" class="form-control" id="url" placeholder="Url where will be redirected into https eg. http://example.com">
+                    </div>
                 </div>
-
+                <input type="hidden" id="http_method_val" name="http_method" value="GET" />
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </section>

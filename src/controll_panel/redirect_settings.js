@@ -31,6 +31,10 @@ const router = function (app) {
             res.end(response);
         })
     })
+
+    app.post('/settings/redirect/advanced',function(req,res){
+        
+    });
 };
 
 
