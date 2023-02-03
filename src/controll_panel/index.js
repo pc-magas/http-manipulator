@@ -4,7 +4,7 @@ const EventEmitter = require('node:events');
 
 const express = require('express');
 
-const {getBaseUrl} = require('../http_utils');
+const {getBaseUrl} = require('../common/http_utils');
 const nunjunks = require('./views');
 
 const app = express();
@@ -16,36 +16,34 @@ app.use('/static/js/boostrap',express.static(path.join(__dirname,'/../../node_mo
 
 app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modules/jquery/dist')));
 
-const getProtocol = (req) => {
-    if(req.protocol) return req.protocol;
+app.get('/settings',function(req,res){
+    const url = getBaseUrl(req);
+    console.log(url);
+    res.setHeader('Location', url+'settings/redirect/https')
+
+});
     
-    return req.secure ? 'https':'http';
-}
-
-// const router = urlrouter(function (app) {
-
-    app.get('/', (req, res, next) => {
-        nunjunks.render('home.njk', {
-                title:'Homepage',
-                js: [
-                    '/static/js/home.js'
-                ],
-                baseUrl: getBaseUrl(req)
-        },(err,response)=>{
-            res.end(response);
-        })
-    });
-
-    app.get('/licence',(req,res,next)=>{
-        nunjunks.render('licence.njk',{},(err,response)=>{
-            res.end(response);
-        });
+app.get('/', (req, res, next) => {
+    nunjunks.render('home.njk', {
+        title:'Homepage',
+        js: [
+            '/static/js/home.js'
+        ],
+        baseUrl: getBaseUrl(req)
+    },(err,response)=>{
+        res.end(response);
     })
+    
+});
 
-    const redirect = require('./redirect_settings');
-    redirect(app);
-// });
+app.get('/licence',(req,res,next)=>{
+    nunjunks.render('licence.njk',{},(err,response)=>{
+        res.end(response);
+    });
+})
 
+const redirect = require('./controllers/redirect_settings');
+redirect(app);
 
 const wsServer = new ws.WebSocketServer({ noServer: true });
 const myEmitter = new EventEmitter();

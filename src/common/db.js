@@ -16,7 +16,7 @@ function createTables(db){
                 url_from TEXT not null,
                 url_to TEXT not null,
                 method TEXT not null,
-                http_status_code INTEGER not null CHECK( http_status_code IN (300,301,302,304,304,308,307) ) DEFAULT 301,
+                http_status_code INTEGER not null CHECK( http_status_code IN (301,302,303,304,305,306,307,308) ) DEFAULT 301,
                 use_in_https  INTEGER not null CHECK(use_in_https IN (0,1)) DEFAULT 0,
                 use_in_http  INTEGER not null CHECK(use_in_http IN (0,1)) DEFAULT 1,
                 exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1,

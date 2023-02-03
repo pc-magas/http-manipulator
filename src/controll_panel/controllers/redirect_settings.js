@@ -1,18 +1,11 @@
-const nunjunks = require('./views');
-const {getBaseUrl} = require('../http_utils');
+const nunjunks = require('../views');
+const {getBaseUrl} = require('../../common/http_utils.js');
 
 
 const router = function (app) {
-    app.get('/settings',function(req,res){
-        const url = http_utils.getBaseUrl(req);
-        console.log(url);
-        res.setHeader('Location', url+'settings/redirect/https')
-
-    });
-
     app.get('/settings/redirect/https',function(req,res){
         nunjunks.render('./settings/redirect_https.njk', {
-            title:'Basir reficrection from http to Https',
+            title:'Basic redicrection from Http to Https',
             js: [],
             baseUrl: getBaseUrl(req)
         },(err,response)=>{
