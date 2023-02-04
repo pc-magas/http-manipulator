@@ -21,6 +21,9 @@
 
                 $(document.getElementById(idToChangeDisplayVal)).text(value);
                 $(document.getElementById(inputElement)).val(value);
+
+                $("#status").setHttpStatusBasedOnHttpMethod(value);
+
             });
 
             $("#status").httpRedirect();

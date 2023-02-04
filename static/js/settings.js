@@ -1,10 +1,7 @@
 (function( $ ) {
     $.fn.httpRedirect = function() {
 
-        console.log( this.get(0).tagName);
-        if(
-            this.get(0).tagName.toLowerCase() != 'select' 
-        ){
+        if(this.get(0).tagName.toLowerCase() != 'select'){
             return this;
         }
 
@@ -43,10 +40,22 @@
             this.append(element);
         });
 
- 
-        return this;
- 
+        return this; 
     };
+
+    $.fn.setHttpStatusBasedOnHttpMethod = function(http_method){
+        if(this.get(0).tagName.toLowerCase() != 'select'){
+            return this;
+        }
+
+        if( (Array.isArray(http_method) && (http_method.length > 1 || (http_method.length == 1 && http_method[0] != 'GET')))
+            || (typeof string == 'string' &&  http_method != 'GET')
+        ){
+            console.log("Here");
+            $(this).val('308');
+        }
+        return this;
+    }
  
 }( jQuery ));
  
