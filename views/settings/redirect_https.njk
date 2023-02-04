@@ -2,6 +2,7 @@
 
 {% block jsblock %}
     {{ super() }}
+    <script src='/static/js/settings.js'></script>
     <script>
         $(function(){
             $('.dropdown-select li').on('click', function(e){
@@ -21,6 +22,8 @@
                 $(document.getElementById(idToChangeDisplayVal)).text(value);
                 $(document.getElementById(inputElement)).val(value);
             });
+
+            $("#status").httpRedirect();
         });
     </script>
 {% endblock %}
@@ -43,14 +46,14 @@
                         <input type="url" name="base_url" class="form-control" id="url" placeholder="Url where will be redirected into https eg. http://example.com">
                     </div>
                 </div>
-                <div class="mb-3 row">
-                    <label for="staticEmail" class="col-sm-2 col-form-label">Http Status</label>
-                    <div class="col-sm-10">
-                        <select id="status" class="form-select m-1" name="http_status" aria-label="http response status">
-                            <option value="301">301 Moved Permanently</option>
-                            <option value="302">302 Temporary Redirect</option>
-                            <option value="308">308 Permanent Redirect</option>
-                        </select>
+                <div class="mb-3 row m-2">
+                    <div class="input-group">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Http Status</label>
+                        <div class="col-sm-10">
+                            <select id="status" class="form-select m-1 http_redirect" name="http_status" aria-label="http response status">
+                            
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <input type="hidden" id="http_method_val" name="http_method" value="GET" />

@@ -3,6 +3,23 @@
 {% block jsblock %}
     {{ super() }}
     <script src='/static/js/settings.js'></script>
+     <script>
+        $(function(){
+            $("#http_method").on('change',function(event){
+                const source = event.target || event.srcElement;
+                const http_method = $(source).val();
+                console.log(http_method.length,Array.isArray(http_method) ,http_method[0] )
+                if( (Array.isArray(http_method) && (http_method.length > 1 || (http_method.length == 1 && http_method[0] != 'GET')))
+                    || (typeof string == 'string' &&  http_method != 'GET')
+                ){
+                    console.log("Here");
+                    $("#status").val('308');
+                }
+            });
+            $("#status").httpRedirect();
+        });
+        
+    </script>
 {% endblock %}
 
 {% block main %}
@@ -25,11 +42,8 @@
                             <option value="PATCH">PATCH</option>
                             <option value="DELETE">DELETE</option>
                         </select>
-                        <select id="status" class="form-select m-1" name="http_status" aria-label="http response status">
+                        <select id="status" class="form-select m-1 http_status" name="http_status" aria-label="http response status">
                             <option selected>Http Status</option>
-                            <option value="301">301 Moved Permanently</option>
-                            <option value="302">302 Temporary Redirect</option>
-                            <option value="308">308 Permanent Redirect</option>
                         </select>
                 </div>
                 <div class="d-flex flex-row">

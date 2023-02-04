@@ -1,14 +1,52 @@
-$(function(){
+(function( $ ) {
+    $.fn.httpRedirect = function() {
 
-    $("#http_method").on('change',function(event){
-        const source = event.target || event.srcElement;
-        const http_method = $(source).val();
-        console.log(http_method.length,Array.isArray(http_method) ,http_method[0] )
-        if( (Array.isArray(http_method) && (http_method.length > 1 || (http_method.length == 1 && http_method[0] != 'GET')))
-            || (typeof string == 'string' &&  http_method != 'GET')
+        console.log( this.get(0).tagName);
+        if(
+            this.get(0).tagName.toLowerCase() != 'select' 
         ){
-            console.log("Here");
-            $("#status").val('308');
+            return this;
         }
-    });
-});
+
+        const http_status = [
+            {
+                status:301,
+                desc: "Moved Permanently"
+            },
+            {
+                status: 302,
+                desc: "Temporary Redirect"
+            },
+            {
+                status: 303,
+                desc: "See other"
+            },
+            {
+                status: 304,
+                desc: "Not Modified"
+            },
+            {
+                status: 307,
+                desc: "Temporary Redirect"
+            },
+            {
+                status: 308,
+                desc: "Permanent Redirect"
+            }
+        ];
+
+        console.log(this);
+        http_status.forEach((val) => {
+            const element = document.createElement("option");
+            element.setAttribute("value",val.status);
+            element.text = val.status+" "+val.desc
+            this.append(element);
+        });
+
+ 
+        return this;
+ 
+    };
+ 
+}( jQuery ));
+ 
