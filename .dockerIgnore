@@ -14,3 +14,4 @@ DockerfileDev
 docker-compose.yml
 config/config_local.json
 config_vol
+.eslintrc.js
