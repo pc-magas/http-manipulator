@@ -22,4 +22,4 @@ RUN npm ci --omit=dev
 USER node
 
 ENTRYPOINT ["/usr/bin/entrypoint"]
-CMD [ "node", "src/index.js" ]
+CMD [ "node","--harmony", "src/index.js" ]

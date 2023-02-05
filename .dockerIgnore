@@ -9,3 +9,8 @@ config_vol
 src/so.js
 config/config_dev.json
 stackoverflow
+DockerfileDev
+.gitignore
+docker-compose.yml
+config/config_local.json
+config_vol
