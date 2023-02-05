@@ -1,7 +1,7 @@
 const { assert } = require('node:console');
 const request = require('supertest');
 
-const db = require('../src/db.js');
+const db = require('../src/common/db.js');
 const redirect = require('../src/manipulators/redirect');
 
 test("http only redirect from 'http://google.com/mytest to http://yahoo.com ", (done) => {
