@@ -46,7 +46,6 @@ function createTables(db){
 }
 
 module.exports = function(db_path){
-
     const db = sqlite3(db_path);
     createTables(db);
     return db;
