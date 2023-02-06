@@ -1,5 +1,6 @@
 const url = require('node:url');
 const {http_methods,no_301_301_http_methods} = require('../../constants.js');
+const difference = require('lodash.difference');
 
 /**
  * 
@@ -34,30 +35,30 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
             0
         )`;
 
-    const stmt = db.prepare(sql);
     
     if( (typeof methods == 'string' || methods instanceof String) && methods.trim() != ""){
         methods=[methods];
     } 
-    console.log(methods);
+
+
     if (Array.isArray(methods) && methods.length > 0){
 
         let uniquemethods = new Map(methods.map(s => [s.trim().toUpperCase(), s]));
         uniquemethods = [...uniquemethods.values()];
 
         
+        if(no_301_301_http_methods.reduce((acc,value)=> acc||uniquemethods.indexOf(value) != -1,false) && [301,302].indexOf(status_code) != -1){
+            throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
+        }
 
-        //@todo check if http method is unique
+        const stmt = db.prepare(sql);
+        
         uniquemethods.forEach((value)=>{
                         
             if(http_methods.indexOf(value) == -1){
                 throw Error(`Http does not support method ${value}`);
             }
             
-            if( no_301_301_http_methods.indexOf(value) != -1 && [301,302].indexOf(status_code) ){
-                throw Error(`No ${status_code} redirection is supported for Http method ${value} `);
-            }
-
             stmt.run({
                 "domain": url_to_insert,
                 "method": value,
