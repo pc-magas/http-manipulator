@@ -1,4 +1,3 @@
-const { assert } = require('node:console');
 const request = require('supertest');
 
 const db = require('../src/common/db.js');

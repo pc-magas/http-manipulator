@@ -1,4 +1,4 @@
-const Url = require('url');
+const url = require('node:url');
 const {http_methods,no_301_301_http_methods} = require('../../constants.js');
 
 /**
@@ -12,7 +12,8 @@ const {http_methods,no_301_301_http_methods} = require('../../constants.js');
  */
 module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
 
-    let url_to_insert = new Url(domain);
+    var url_to_insert = url.parse(domain);
+    url_to_insert = url_to_insert.host;
     status_code = parseInt(status_code);
 
     const sql = `INSERT INTO redirect (
@@ -38,10 +39,10 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
     if( (typeof methods == 'string' || methods instanceof String) && methods.trim() != ""){
         methods=[methods];
     } 
-    
+    console.log(methods);
     if (Array.isArray(methods) && methods.length > 0){
 
-        let uniquemethods = new Map(names.map(s => [s.trim().toUpperCase(), s]));
+        let uniquemethods = new Map(methods.map(s => [s.trim().toUpperCase(), s]));
         uniquemethods = [...uniquemethods.values()];
 
         
@@ -53,12 +54,12 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
                 throw Error(`Http does not support method ${value}`);
             }
             
-            if( no_301_301_http_methods.indexOf(value) && [301,302].indexOf(status_code) ){
+            if( no_301_301_http_methods.indexOf(value) != -1 && [301,302].indexOf(status_code) ){
                 throw Error(`No ${status_code} redirection is supported for Http method ${value} `);
             }
 
-            db.insert({
-                "domain": url_to_insert.domain,
+            stmt.run({
+                "domain": url_to_insert,
                 "method": value,
                 "status_code" : status_code
             });
