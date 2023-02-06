@@ -161,3 +161,49 @@ test("Cannot Save REDIRECT Http to https returning 302 on All http methods",(don
 
     done(); 
 });
+
+test("Cannot Save redirect Http to https returning 302 on All http methods except get",(done)=>{    
+    const expected_messages = `302 redirection is supported only for methods "PUT,POST,PATCH".`
+
+    http_methods.forEach((method)=>{
+
+        if(["GET","HEAD","OPTIONS","DELETE"].indexOf(method) != -1 ) return;
+
+        const db_con = db(':memory:');
+        
+        try{
+            redirect.saveRedirectHttps(db_con,'https://google.com',method,302);
+        } catch(e){
+            expect(e.toString().replace("Error: ","")).toEqual(expected_messages);
+        }
+
+        let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+        count_result = count_result.pop();
+        count_result = count_result.total;
+        expect(count_result).toEqual(0);
+    });
+    done();
+});
+
+test("Cannot Save redirect Http to https returning 302 on All http methods except get",(done)=>{    
+    const expected_messages = `301 redirection is supported only for methods "PUT,POST,PATCH".`
+
+    http_methods.forEach((method)=>{
+
+        if(["GET","HEAD","OPTIONS","DELETE"].indexOf(method) != -1 ) return;
+
+        const db_con = db(':memory:');
+        
+        try{
+            redirect.saveRedirectHttps(db_con,'https://google.com',method,301);
+        } catch(e){
+            expect(e.toString().replace("Error: ","")).toEqual(expected_messages);
+        }
+
+        let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+        count_result = count_result.pop();
+        count_result = count_result.total;
+        expect(count_result).toEqual(0);
+    });
+    done();
+});

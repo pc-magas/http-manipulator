@@ -1,6 +1,5 @@
 const url = require('node:url');
 const {http_methods,no_301_301_http_methods} = require('../../constants.js');
-const difference = require('lodash.difference');
 
 /**
  * 
