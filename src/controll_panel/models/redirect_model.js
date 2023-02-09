@@ -43,8 +43,9 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
     if (Array.isArray(methods) && methods.length > 0){
 
         let uniquemethods = new Map(methods.map(s => [s.trim().toUpperCase(), s]));
-        uniquemethods = [...uniquemethods.values()];
+        uniquemethods = [...uniquemethods.values()].map(method => method.trim().toUpperCase());
 
+        
         
         if(no_301_301_http_methods.reduce((acc,value)=> acc||uniquemethods.indexOf(value) != -1,false) && [301,302].indexOf(status_code) != -1){
             throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
@@ -52,10 +53,13 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
 
         const stmt = db.prepare(sql);
         
+        const errors = [];
+
         uniquemethods.forEach((value)=>{
                         
             if(http_methods.indexOf(value) == -1){
-                throw Error(`Http does not support method ${value}`);
+                errors.push(`Http does not support method ${value}`);
+                return;
             }
             
             stmt.run({
@@ -64,6 +68,11 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
                 "status_code" : status_code
             });
         });
+
+        if (errors.length > 0) {
+            throw new Error(errors.join());
+        }
+
     } else {
         throw Error("No methods provided");
     }
