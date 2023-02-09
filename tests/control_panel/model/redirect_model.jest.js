@@ -287,3 +287,108 @@ test("ON Invalid method error must be thrown",(done) => {
 
     done();
 });
+
+test("ON Invalid http code error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveRedirectHttps(db_con,'https://google.com',["GET"],1000);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("ON non redirect http code error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveRedirectHttps(db_con,'https://google.com',["POST"],200);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("ON Invalid url error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveRedirectHttps(db_con,'dsasdsasaasads',["GET"],307);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("ON Invalid url and method error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveRedirectHttps(db_con,'dsasdsasaasads',["Metal"],307);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("ON Invalid params error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveRedirectHttps(db_con,'dsasdsasaasads',["Metal"],1000);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
