@@ -9,6 +9,8 @@ const nunjunks = require('./views');
 
 const app = express();
 
+app.use(express.urlencoded());
+
 app.use('/static',express.static(path.join(__dirname,'/../../static')));
 app.use('/static/css/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/css')));
 app.use('/static/css/boostrap/icon/',express.static(path.join(__dirname,'/../../node_modules/bootstrap-icons')));
@@ -19,8 +21,9 @@ app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modu
 app.get('/settings',function(req,res){
     const url = getBaseUrl(req);
     console.log(url);
-    res.setHeader('Location', url+'settings/redirect/https')
-
+    console.log(url);
+    res.setHeader('Location', url+'/settings/redirect/https')
+    res.send(301);
 });
     
 app.get('/', (req, res, next) => {
@@ -43,7 +46,6 @@ app.get('/licence',(req,res,next)=>{
 })
 
 const redirect = require('./controllers/redirect_settings');
-redirect(app);
 
 const wsServer = new ws.WebSocketServer({ noServer: true });
 const myEmitter = new EventEmitter();
@@ -59,8 +61,11 @@ wsServer.on('message',function connection(ws) {
     console.log("Websocket received a message");
 });
 
-module.exports.listen = function(port) {
+module.exports.listen = function(port,db) {
     console.log("Listening for control panel at port "+port);
+
+    redirect(db,app);
+
 
     const server = app.listen(port);
     server.on('upgrade', (request, socket, head) => {

@@ -53,4 +53,5 @@ const https = http_lib.createHttpsServer(database,default_key,default_cert)
 const https_port = config['https_port']||443
 https.listen(https_port)
 
-control_panel.listen(parseInt(config.panel_port) || 3000);
+const port = parseInt(config.panel_port) || 3000;
+control_panel.listen(port,database);

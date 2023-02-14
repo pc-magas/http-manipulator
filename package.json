@@ -7,6 +7,7 @@
     "test": "jest --verbose ./tests",
     "start": "node src/index.js",
     "dev_docker": "nodemon src/index.js",
+    "debug_doker": "nodemon --inspect --inspect-brk=9595 src/index.js",
     "dev_local": "nodemon src/index.js --config=./config/config_local.json",
     "lint": "eslint"
   },

@@ -1,8 +1,9 @@
 const nunjunks = require('../views');
 const {getBaseUrl} = require('../../common/http_utils.js');
+const {saveRedirectHttps} = require('../models/redirect_model');
+var {urlencoded} = require('express')
 
-
-const router = function (app) {
+const router = function (db,app) {
     app.get('/settings/redirect/https',function(req,res){
         nunjunks.render('./settings/redirect_https.njk', {
             title:'Basic redicrection from Http to Https',
@@ -25,8 +26,16 @@ const router = function (app) {
         })
     })
 
-    app.post('/settings/redirect/advanced',function(req,res){
+    app.post('/settings/redirect/https',function(req,res){
         
+        console.log(req.body);
+        try{
+            saveRedirectHttps(db,req.body.base_url,req.body.http_method,req.body.http_status);
+            res.send(204);
+        } catch(err){
+            console.error(err);
+            res.send(500);
+        }
     });
 };
 

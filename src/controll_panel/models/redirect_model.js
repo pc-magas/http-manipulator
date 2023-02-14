@@ -11,7 +11,6 @@ const {http_methods,no_301_301_http_methods} = require('../../constants.js');
  * @param {String|int} status_code Http Status Code 
  */
 module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
-
     var url_to_insert = url.parse(domain);
     url_to_insert = url_to_insert.host;
     status_code = parseInt(status_code);
@@ -34,11 +33,11 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
             0
         )`;
 
-    
+    console.log("Here");
+
     if( (typeof methods == 'string' || methods instanceof String) && methods.trim() != ""){
         methods=[methods];
     } 
-
 
     if (Array.isArray(methods) && methods.length > 0){
 
