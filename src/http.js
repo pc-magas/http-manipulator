@@ -57,8 +57,7 @@ function createHttpsServer(db,default_key,default_cert){
   return https.createServer(options,app);
 }
 
-function createHttpServer(db){
-
+function createHttpServer(db) {
   const app = connect();
   app.use(redirect(db,false));
   app.use(request_forward.forward_default);

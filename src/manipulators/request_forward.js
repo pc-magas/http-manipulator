@@ -8,24 +8,22 @@ const default_redirector = connect();
 
 
 default_redirector.use((req,res,next) => {
-    
-    console.log(`Forwardinf request ${req.url}`)
-
     const http_handler = getProtocol(req) == 'http'?http:https;
-    
-    http_handler.request({
+
+    console.log(req.headers);
+
+    const http_client = http_handler.request({
         host: req.headers.host,
         path: req.url,
         method: req.method,
         headers: req.headers,
         body: req.body
     },(resp)=>{
+        res.writeHead(resp.statusCode,resp.headers);
         resp.pipe(res);
     });
 
-    req.pipe(http_handler);
-
-    next();
+    req.pipe(http_client);
 });
 
 
