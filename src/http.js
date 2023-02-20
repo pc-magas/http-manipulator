@@ -3,7 +3,8 @@ const http = require('node:http');
 let https = require('node:https');
 const connect = require('connect');
 
-const redirect = require('./manipulators/redirect.js')
+const redirect = require('./manipulators/redirect.js');
+const request_forward = require('./manipulators/request_forward.js');
 
 /**
  * Create an Https server with tls cert management
@@ -28,6 +29,12 @@ function createHttpsServer(db,default_key,default_cert){
     secureContext[row.domain] = tls.createSecureContext(ssl_context);
   })
 
+  const tls = require('tls');
+  var ctx = tls.createSecureContext({
+    key: fs.readFileSync(default_key), 
+    cert: fs.readFileSync(default_cert), 
+  });
+
   const options = {
     SNICallback: function (domain, cb) {
         if (secureContext[domain]) {
@@ -38,17 +45,15 @@ function createHttpsServer(db,default_key,default_cert){
                 return secureContext[domain]; 
             }
         } else {
-            throw new Error('No keys/certificates for domain requested');
+            // must list a default key and cert because required by tls.createServer()
+            cb(null,ctx);
         }
     },
-    // must list a default key and cert because required by tls.createServer()
-    key: fs.readFileSync(default_key), 
-    cert: fs.readFileSync(default_cert), 
   };
   
   const app = connect();
   app.use(redirect(db,true));
-
+  app.use(request_forward.forward_default);
   return https.createServer(options,app);
 }
 
@@ -56,6 +61,7 @@ function createHttpServer(db){
 
   const app = connect();
   app.use(redirect(db,false));
+  app.use(request_forward.forward_default);
 
   return http.createServer(app);
 }
