@@ -22,6 +22,7 @@ function createTables(db){
                 exact_match INTEGER not null CHECK(exact_match IN (0,1)) DEFAULT 1,
                 UNIQUE(url_from,method,http_status_code,use_in_http,exact_match),
                 UNIQUE(url_from,method,http_status_code,use_in_https,exact_match)
+                CHECK(use_in_http=1 or use_in_https=1)
             );
             
             DROP TRIGGER IF EXISTS remove_http_https;
@@ -45,8 +46,20 @@ function createTables(db){
     createTablesInTransaction();
 }
 
-module.exports = function(db_path){
+module.exports.createDb = function(db_path){
     const db = sqlite3(db_path);
     createTables(db);
     return db;
 }
+
+/**
+ * Casts a value as sqlite-acceptable boolean value
+ * @param {String|Integer|Boolean} val 
+ * @returns {1|0}
+ */
+module.exports.sqliteBoolVal = (val) => {
+    val = typeof val == 'string'? val.trim().toLowerCase():val;
+
+   return  ['true','yes','y',1,true].indexOf(val) > 0?1:0;
+
+}; 

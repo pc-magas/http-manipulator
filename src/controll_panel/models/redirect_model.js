@@ -1,6 +1,7 @@
 const url = require('node:url');
-const {http_methods,no_301_302_http_methods} = require('../../constants.js');
+const {http_methods} = require('../../constants.js');
 const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable} = require('../../common/http_utils');
+const {sqliteBoolVal} = require('../../common/db.js');
 
 /**
  * 
@@ -94,6 +95,14 @@ module.exports.saveAdvancedRedirect=function(
     exact_match
 ){
 
+    use_in_http = typeof use_in_http == 'undefined'?true:use_in_http;
+    use_in_https = typeof use_in_https == 'undefined'?false:use_in_https;
+    exact_match = typeof exact_match == 'undefined'?false:exact_match;
+
+    if(use_in_http == false && use_in_https == false){
+        throw Error("use in http or use in https must be both true");
+    }
+
     status_code = parseInt(status_code);
 
     methods = sanitizeHttpMethods(methods);
@@ -117,17 +126,16 @@ module.exports.saveAdvancedRedirect=function(
         :exact_match
     )`;
 
-    if (Array.isArray(methods) && methods.length > 0){
+    const uniquemethods = sanitizeHttpMethods(methods);
+    if (Array.isArray(uniquemethods) && uniquemethods.length > 0){
         
-        if(isRedirectStatusCodeAcceptable(methods,status_code)){
+        if(isRedirectStatusCodeAcceptable(uniquemethods,status_code)){
             throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
         }
 
         const stmt = db.prepare(sql);
 
         const errors = [];
-
-        const uniquemethods = sanitizeHttpMethods(methods);
 
         uniquemethods.forEach((value)=>{
                         
@@ -136,16 +144,26 @@ module.exports.saveAdvancedRedirect=function(
                 return;
             }
 
-            stmt.run({
+            const params = {
                 "url_from": url_from.trim(),
                 "url_to":url_to.trim(),
                 "method": value,
                 "status_code" : status_code,
-                "use_in_http":use_in_http,
-                "use_in_https":use_in_https,
-                exact_match
-            });
+                "use_in_http":sqliteBoolVal(use_in_http),
+                "use_in_https":sqliteBoolVal(use_in_https),
+                "exact_match":sqliteBoolVal(exact_match)
+            };
+            try {
+                stmt.run(params);
+            } catch(e){
+                errors.push(e.toSting());
+            }
         });
+
+        if (errors.length > 0) {
+            throw new Error(errors.join());
+        }
+
     } else {
         throw Error("No methods provided");
     }

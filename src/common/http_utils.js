@@ -1,4 +1,4 @@
-const {http_methods,no_301_302_http_methods} = require('../constants.js');
+const {no_301_302_http_methods} = require('../constants.js');
 
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;

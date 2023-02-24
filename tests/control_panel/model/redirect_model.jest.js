@@ -1,4 +1,4 @@
-const db = require('../../../src/common/db.js');
+const db = require('../../../src/common/db.js').createDb;
 const redirect = require('../../../src/controll_panel/models/redirect_model.js');
 const {http_methods,no_301_301_http_methods} = require('../../../src/constants.js');
 const { map } = require('jquery');
@@ -392,3 +392,330 @@ test("ON Invalid params error must be thrown",(done) => {
 
     done();
 });
+
+test("Save Advanced REDIRECT returning 301 on GET method",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','GET',301,true,false,false);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+
+    let result = db_con.prepare("SELECT * from redirect").all();
+    result = result.pop();
+    expect(result.url_from).toEqual('google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.method).toEqual('GET');
+    expect(parseInt(result.http_status_code)).toEqual(301);
+    expect(result.exact_match).toEqual(0);
+    expect(result.use_in_https).toEqual(0);
+    expect(result.use_in_http).toEqual(1);
+    expect(result.exact_match).toEqual(0);
+
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 301 on GET method upon https",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','GET',301,false,true,false);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+
+    let result = db_con.prepare("SELECT * from redirect").all();
+    result = result.pop();
+    expect(result.url_from).toEqual('google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.method).toEqual('GET');
+    expect(parseInt(result.http_status_code)).toEqual(301);
+    expect(result.exact_match).toEqual(0);
+    expect(result.use_in_https).toEqual(1);
+    expect(result.use_in_http).toEqual(0);
+    expect(result.exact_match).toEqual(0);
+
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 301 on GET method upon http & https",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','GET',301,true,true,true);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+
+    let result = db_con.prepare("SELECT * from redirect").all();
+    result = result.pop();
+    expect(result.url_from).toEqual('google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.method).toEqual('GET');
+    expect(parseInt(result.http_status_code)).toEqual(301);
+    expect(result.exact_match).toEqual(1);
+    expect(result.use_in_https).toEqual(1);
+    expect(result.use_in_http).toEqual(1);
+
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 302 on GET method",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','GET',302,true,false,false);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+
+    let result = db_con.prepare("SELECT * from redirect").all();
+    result = result.pop();
+    expect(result.url_from).toEqual('google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.method).toEqual('GET');
+    expect(parseInt(result.http_status_code)).toEqual(302);
+    expect(result.exact_match).toEqual(0);
+    expect(result.use_in_https).toEqual(0);
+    expect(result.use_in_http).toEqual(1);
+    expect(result.exact_match).toEqual(0);
+
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 302 on GET method upon http & https",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','GET',302,true,true,true);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+
+    let result = db_con.prepare("SELECT * from redirect").all();
+    result = result.pop();
+    expect(result.url_from).toEqual('google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.method).toEqual('GET');
+    expect(parseInt(result.http_status_code)).toEqual(302);
+    expect(result.exact_match).toEqual(1);
+    expect(result.use_in_https).toEqual(1);
+    expect(result.use_in_http).toEqual(1);
+
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 308 on all http methods upon http & https",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com',http_methods,307,true,true,true);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(http_methods.length);
+
+
+    let results = db_con.prepare("SELECT * from redirect").all();
+    results.forEach((result) => {
+        expect(result.url_from).toEqual('google.com');
+        expect(result.url_to).toEqual('https://yahoo.com');
+        expect(http_methods).toContain(result.method);
+        expect(parseInt(result.http_status_code)).toEqual(307);
+        expect(result.exact_match).toEqual(1);
+        expect(result.use_in_https).toEqual(1);
+        expect(result.use_in_http).toEqual(1);
+    });
+    done(); 
+});
+
+test("Save Advanced REDIRECT returning 308 on all http methods upon http & https",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com',http_methods,308,true,true,true);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(http_methods.length);
+
+
+    let results = db_con.prepare("SELECT * from redirect").all();
+    results.forEach((result) => {
+        expect(result.url_from).toEqual('google.com');
+        expect(result.url_to).toEqual('https://yahoo.com');
+        expect(http_methods).toContain(result.method);
+        expect(parseInt(result.http_status_code)).toEqual(308);
+        expect(result.exact_match).toEqual(1);
+        expect(result.use_in_https).toEqual(1);
+        expect(result.use_in_http).toEqual(1);
+    });
+    done(); 
+});
+
+test("ON Invalid method error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','METAL',302,true,true,true);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("ON Invalid http code error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',302,true,true,true);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
+
+test("Cannot save multiple times on http",(done) => {
+
+    const db_con = db(':memory:');
+    
+    const sql = `INSERT INTO redirect (
+        url_from,
+        url_to,
+        method,
+        http_status_code,
+        use_in_http,
+        use_in_https,
+        exact_match
+    ) values (
+        'https://google.com',
+        'https://yahoo.com',
+        'POST',
+        308,
+        1,
+        0,
+        1
+    )`;
+    db_con.exec(sql);
+
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',308,true,true,true);
+        // Method above should throw exception id not assume it as failing test
+        // done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        // expect(true).toEqual(true);
+    }
+   
+    console.log(db_con.prepare('SELECT * from redirect').all());
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+    done();
+});
+
+
+test("Cannot save multiple times on https",(done) => {
+
+    const db_con = db(':memory:');
+    
+    const sql = `INSERT INTO redirect (
+        url_from,
+        url_to,
+        method,
+        http_status_code,
+        use_in_http,
+        use_in_https,
+        exact_match
+    ) values (
+        'https://google.com',
+        'https://yahoo.com',
+        'POST',
+        308,
+        0,
+        1,
+        1
+    )`;
+    db_con.exec(sql);
+
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',308,true,true,true);
+        // Method above should throw exception id not assume it as failing test
+        // done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        // expect(true).toEqual(true);
+    }
+   
+    console.log(db_con.prepare('SELECT * from redirect').all());
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(1);
+
+    done();
+});
+
