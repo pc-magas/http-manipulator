@@ -1,6 +1,6 @@
 const request = require('supertest');
 
-const db = require('../src/common/db.js');
+const db = require('../src/common/db.js').createDb;
 const redirect = require('../src/manipulators/redirect');
 
 test("http only redirect from 'http://google.com/mytest to http://yahoo.com ", (done) => {

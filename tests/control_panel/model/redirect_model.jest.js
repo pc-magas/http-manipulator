@@ -703,10 +703,10 @@ test("Cannot save multiple times on https",(done) => {
     try{
         redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',308,true,true,true);
         // Method above should throw exception id not assume it as failing test
-        // done(new Error("No error is thrown"));
+        done(new Error("No error is thrown"));
     } catch(e) {
         // Dummy assertion
-        // expect(true).toEqual(true);
+        expect(true).toEqual(true);
     }
    
     console.log(db_con.prepare('SELECT * from redirect').all());
