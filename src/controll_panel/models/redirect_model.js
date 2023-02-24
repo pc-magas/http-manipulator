@@ -1,5 +1,6 @@
 const url = require('node:url');
-const {http_methods,no_301_301_http_methods} = require('../../constants.js');
+const {http_methods,no_301_302_http_methods} = require('../../constants.js');
+const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable} = require('../../common/http_utils');
 
 /**
  * 
@@ -32,21 +33,12 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
             0,
             0
         )`;
+ 
+    const uniquemethods = sanitizeHttpMethods(methods);
 
-    console.log("Here");
-
-    if( (typeof methods == 'string' || methods instanceof String) && methods.trim() != ""){
-        methods=[methods];
-    } 
-
-    if (Array.isArray(methods) && methods.length > 0){
-
-        let uniquemethods = new Map(methods.map(s => [s.trim().toUpperCase(), s]));
-        uniquemethods = [...uniquemethods.values()].map(method => method.trim().toUpperCase());
-
+    if (Array.isArray(uniquemethods) && uniquemethods.length > 0){
         
-        
-        if(no_301_301_http_methods.reduce((acc,value)=> acc||uniquemethods.indexOf(value) != -1,false) && [301,302].indexOf(status_code) != -1){
+        if(isRedirectStatusCodeAcceptable(uniquemethods,status_code)){
             throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
         }
 
@@ -76,3 +68,86 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
         throw Error("No methods provided");
     }
 };
+
+/**
+ * 
+ * Save the advanced settings for Http redirection
+ * @todo redesighn this feature.
+ * 
+ * @param {*} db Db connection
+ * @param {String} url_from Url where is received 
+ * @param {String} url_to Url whjere will be redirected
+ * @param {Array|String} methods Http methods
+ * @param {int} status_code HttpStatus code 
+ * @param {bool} use_in_http Handle In http
+ * @param {bool} use_in_https Handle In https
+ * @param {bool} exact_match Whether domain will be exaclty matched
+ */
+module.exports.saveAdvancedRedirect=function(
+    db,
+    url_from,
+    url_to,
+    methods,
+    status_code,
+    use_in_http,
+    use_in_https,
+    exact_match
+){
+
+    status_code = parseInt(status_code);
+
+    methods = sanitizeHttpMethods(methods);
+
+
+    const sql = `INSERT INTO redirect (
+        url_from,
+        url_to,
+        method,
+        http_status_code,
+        use_in_http,
+        use_in_https,
+        exact_match
+    ) values (
+        :url_from,
+        :url_to,
+        :method,
+        :status_code,
+        :use_in_http,
+        :use_in_https,
+        :exact_match
+    )`;
+
+    if (Array.isArray(methods) && methods.length > 0){
+        
+        if(isRedirectStatusCodeAcceptable(methods,status_code)){
+            throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
+        }
+
+        const stmt = db.prepare(sql);
+
+        const errors = [];
+
+        const uniquemethods = sanitizeHttpMethods(methods);
+
+        uniquemethods.forEach((value)=>{
+                        
+            if(http_methods.indexOf(value) == -1){
+                errors.push(`Http does not support method ${value}`);
+                return;
+            }
+
+            stmt.run({
+                "url_from": url_from.trim(),
+                "url_to":url_to.trim(),
+                "method": value,
+                "status_code" : status_code,
+                "use_in_http":use_in_http,
+                "use_in_https":use_in_https,
+                exact_match
+            });
+        });
+    } else {
+        throw Error("No methods provided");
+    }
+    
+}

@@ -23,7 +23,7 @@ module.exports.http_methods = [
     'DELETE'
 ];
 
-module.exports.no_301_301_http_methods = [
+module.exports.no_301_302_http_methods = [
     'PUT',
     'POST',
     'PATCH',
