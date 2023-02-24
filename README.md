@@ -3,6 +3,26 @@
 A v-host enabled http manupulation reverse proxy.
 
 ## GOALS
-It is intented as a mim http proxy that is able to mock and manipulate http requests.
+It is intented as a reverse http(s) proxy that is able to mock and manipulate http requests.
 
-UNDER HEAVY DEVELOPMENT
+## Run it so far
+
+In the following project for now can be run via:
+
+```
+docker-compose up -d
+```
+
+And visit in your browser: http://172.21.0.2:3000
+
+## Stuff toimplement
+
+1. Pipelines for production containers
+2. Request logging
+3. XML RPC mocking
+4. SMS Gateways mocking
+5. Email mocking
+6. Request reporduction
+6. http request manipulation
+
+**UNDER HEAVY DEVELOPMENT**
