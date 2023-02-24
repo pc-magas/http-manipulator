@@ -15,7 +15,7 @@ docker-compose up -d
 
 And visit in your browser: http://172.21.0.2:3000
 
-## Stuff toimplement
+## Stuff to implement
 
 1. Pipelines for production containers
 2. Request logging
