@@ -45,9 +45,19 @@ const isRedirectStatusCodeAcceptable = (methods,status_code) => {
     return no_301_302_http_methods.reduce((acc,value)=> acc||methods.indexOf(value) != -1,false) && [301,302].indexOf(status_code) != -1;
 }
 
+const stringIsAValidUrl = (s) => {
+    try {
+      new URL(s);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
 module.exports = {
     getProtocol,
     getBaseUrl,
     sanitizeHttpMethods,
-    isRedirectStatusCodeAcceptable
+    isRedirectStatusCodeAcceptable,
+    stringIsAValidUrl
 };

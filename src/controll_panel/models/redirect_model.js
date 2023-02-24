@@ -1,6 +1,6 @@
 const url = require('node:url');
 const {http_methods} = require('../../constants.js');
-const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable} = require('../../common/http_utils');
+const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable, stringIsAValidUrl} = require('../../common/http_utils');
 const {sqliteBoolVal} = require('../../common/db.js');
 
 /**
@@ -95,12 +95,17 @@ module.exports.saveAdvancedRedirect=function(
     exact_match
 ){
 
+
     use_in_http = typeof use_in_http == 'undefined'?true:use_in_http;
     use_in_https = typeof use_in_https == 'undefined'?false:use_in_https;
     exact_match = typeof exact_match == 'undefined'?false:exact_match;
 
     if(use_in_http == false && use_in_https == false){
         throw Error("use in http or use in https must be both true");
+    }
+
+    if(!stringIsAValidUrl(url_from) || !stringIsAValidUrl(url_to)){
+        throw Error("Invalid Urls");
     }
 
     status_code = parseInt(status_code);

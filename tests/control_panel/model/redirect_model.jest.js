@@ -719,3 +719,53 @@ test("Cannot save multiple times on https",(done) => {
     done();
 });
 
+test("Save REDIRECT Http to https returning 307 on Multiple http methods with duplicates",(done) => {
+    const db_con = db(':memory:');
+    try{
+        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com',['GET',"post","posT","pOsT  ",'get',"POST",'gET',"Get","geT","pOsT",],307);
+    } catch(e){
+        done(e);
+        return;
+    }
+
+    const expected_methods = ["GET","POST"];
+
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(2);
+
+
+    const results = db_con.prepare("SELECT * from redirect").all();
+    results.forEach((result) => {
+        expect(result.url_from).toEqual('google.com');
+        expect(result.url_to).toEqual('https://yahoo.com');
+        expect(expected_methods).toContain(result.method);
+        expect(parseInt(result.http_status_code)).toEqual(307);
+        expect(result.exact_match).toEqual(0);
+        expect(result.use_in_https).toEqual(0);
+        expect(result.use_in_http).toEqual(1);
+    });
+    done(); 
+});
+
+test("ON Invalid url error must be thrown",(done) => {
+
+    const db_con = db(':memory:');
+   
+    try{
+        redirect.saveAdvancedRedirect(db_con,'dsasdsasaasads',"https://yahoo.com",["GET"],307);
+        // Method above should throw exception id not assume it as failing test
+        done(new Error("No error is thrown"));
+    } catch(e) {
+        // Dummy assertion
+        expect(true).toEqual(true);
+    }
+   
+    let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
+    count_result = count_result.pop();
+    count_result = count_result.total;
+    expect(count_result).toEqual(0);
+
+    done();
+});
