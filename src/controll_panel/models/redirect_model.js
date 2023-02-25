@@ -161,7 +161,7 @@ module.exports.saveAdvancedRedirect=function(
             try {
                 stmt.run(params);
             } catch(e){
-                errors.push(e.toSting());
+                errors.push(e.toString());
             }
         });
 

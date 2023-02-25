@@ -1,6 +1,6 @@
 const nunjunks = require('../views');
 const {getBaseUrl} = require('../../common/http_utils.js');
-const {saveRedirectHttps} = require('../models/redirect_model');
+const {saveRedirectHttps,saveAdvancedRedirect} = require('../models/redirect_model');
 var {urlencoded} = require('express')
 
 const router = function (db,app) {
@@ -31,10 +31,30 @@ const router = function (db,app) {
         console.log(req.body);
         try{
             saveRedirectHttps(db,req.body.base_url,req.body.http_method,req.body.http_status);
-            res.send(204);
+            res.sendStatus(204);
         } catch(err){
             console.error(err);
-            res.send(500);
+            res.sendStatus(500);
+        }
+    });
+
+    app.post('/settings/redirect/advanced',function(req,res){
+        
+        console.log(req.body);
+        try{
+            saveAdvancedRedirect(db,
+                req.body.url_from,
+                req.body.url_to,
+                req.body['http_method m-1'],
+                req.body.http_status,
+                req.body.use_in_http,
+                req.body.use_in_https,
+                req.body.exact_match
+            );
+            res.sendStatus(204);
+        } catch(err){
+            console.error(err);
+            res.sendStatus(500);
         }
     });
 };

@@ -60,6 +60,6 @@ module.exports.createDb = function(db_path){
 module.exports.sqliteBoolVal = (val) => {
     val = typeof val == 'string'? val.trim().toLowerCase():val;
 
-   return  ['true','yes','y',1,true].indexOf(val) > 0?1:0;
+   return  ['true','yes','y','on',1,true].indexOf(val) > 0?1:0;
 
 }; 
