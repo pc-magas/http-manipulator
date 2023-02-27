@@ -1,8 +1,6 @@
 (function( $ ) {
     $.fn.httpRedirect = function() {
 
-        console.log(this);
-
         if(this.get(0).tagName.toLowerCase() != 'select'){
             return this;
         }
@@ -66,22 +64,53 @@
 
         $(this).on('submit',function(e){
             e.preventDefault();
-            console.log($(this).serialize());
-            console.log($(this).attr('action'));
-            console.log($(this).attr('method'));
-            $.ajax({
+            const request = $.ajax({
                 "action": $(this).attr('action'),
                 "method": $(this).attr('method'),
                 "data": $(this).serialize(),
-                "success": success,
+                "done": success,
                 "fail":fail,
                 "always":always
             });
-        });
 
+            request.done(success);
+            request.fail(fail);
+            request.always(always);
+        });
     }
  
     
+    $.fn.displayMsg=function(msg,error){
+        console.log( this.get(0).tagName);
+        if(
+            this.get(0).tagName.toLowerCase() != 'div'
+            && this.get(0).tagName.toLowerCase() != 'section'
+        ){
+            return this;
+        }
+
+
+        const element = document.createElement('div');
+        element.textContent = msg;
+        element.setAttribute('role','alert');
+
+        const dismissBtn = document.createElement('button');
+        dismissBtn.classList.add('btn-close');
+        dismissBtn.setAttribute('data-bs-dismiss','alert');
+        dismissBtn.setAttribute('aria-label','Close');
+
+        element.classList.add( "alert", "alert-dismissible", "fade" ,"show");
+        element.classList.add(error?"alert-danger":"alert-success");
+        element.append(dismissBtn); 
+        console.log(element);
+
+        this.append(element);
+
+        setTimeout(()=>{
+            $(element).alert('close');
+        },2000);
+    }
+
 }( jQuery ));
 
 

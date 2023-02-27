@@ -27,7 +27,15 @@
             });
 
             $("#status").httpRedirect();
-            $(".ajax_form").onSubmitAjax(()=>console.log("success"),()=>console.log("fail"),()=>console.log("always"));
+            $(".ajax_form").onSubmitAjax(
+                function(){
+                    console.log("Here");
+                    $("#displayMsg").displayMsg("Success");
+                },
+                function(){
+                    console.log("Error");
+                    $("#displayMsg").displayMsg("Error",true);
+                });
         });
 
 
@@ -37,6 +45,7 @@
 {% block main %}
         <section class="page" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
             <h1>Redirect to Https</h1>
+            <div id="displayMsg"></div>
             <form class="ajax_form" method="post" action="settings/redirect/https">
                 <div class="mb-3">
                     <div class="input-group">
