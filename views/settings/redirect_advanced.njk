@@ -10,7 +10,10 @@
                 const http_method = $(source).val();
                 $("#status").setHttpStatusBasedOnHttpMethod(http_method);
             });
+            
             $("#status").httpRedirect();
+
+            $(".ajax_form").onSubmitAjax(()=>console.log("success"),()=>console.log("fail"),()=>console.log("always"));
         });
         
     </script>

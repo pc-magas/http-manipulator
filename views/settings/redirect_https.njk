@@ -27,7 +27,10 @@
             });
 
             $("#status").httpRedirect();
+            $(".ajax_form").onSubmitAjax(()=>console.log("success"),()=>console.log("fail"),()=>console.log("always"));
         });
+
+
     </script>
 {% endblock %}
 
