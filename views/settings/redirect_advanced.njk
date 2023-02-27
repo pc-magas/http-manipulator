@@ -13,7 +13,15 @@
             
             $("#status").httpRedirect();
 
-            $(".ajax_form").onSubmitAjax(()=>console.log("success"),()=>console.log("fail"),()=>console.log("always"));
+            $(".ajax_form").onSubmitAjax(
+                function(){
+                    console.log("Here");
+                    $("#displayMsg").displayMsg("Success");
+                },
+                function(){
+                    console.log("Error");
+                    $("#displayMsg").displayMsg("Error",true);
+                });
         });
         
     </script>
@@ -22,6 +30,7 @@
 {% block main %}
         <section class="page"  id="redirect_url" role="tabpanel" aria-labelledby="redirect_url">
             <h1>Advanced Redirecting</h1>
+            <div id="displayMsg"></div>
             <form class="ajax_form" method="post" action="settings/redirect/advanced">
                 <div class="mb-3">
                     <label for="url1" class="form-label">From</label>
