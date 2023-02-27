@@ -3,27 +3,33 @@ const {http_methods} = require('../../constants.js');
 const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable, stringIsAValidUrl} = require('../../common/http_utils');
 const {sqliteBoolVal} = require('../../common/db.js');
 
-/**
- * 
- * Save redirection setting for redirection from http to https.
- * 
- * @param {better_sql} db 
- * @param {String} domain url that will be redirected into https 
- * @param {String|Array} methods Http methods 
- * @param {String|int} status_code Http Status Code 
- */
-module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
-    var url_to_insert = url.parse(domain);
-    url_to_insert = url_to_insert.host;
-    status_code = parseInt(status_code);
+class InvalidInputArgumentError extends Error
+{
+    constructor(message) {
+        super(message)
+      }
+}
 
-    this.saveAdvancedRedirect(db,url_to_insert,'https://'+url_to_insert,methods,status_code,true,false,false);
-};
+class ActionDoesnotSupportStatusCode extends Error
+{
+    constructor(message) {
+        super(message)
+    }
+}
 
+class SaveNewValuesFailed extends Error
+{
+    constructor(msg,errors) {
+        super(msg)
+        this.errors = errors;
+    }
+}
+
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 
  * Save the advanced settings for Http redirection
- * @todo redesighn this feature.
+ * @todo redesighn this feature upon user feedback.
  * 
  * @param {*} db Db connection
  * @param {String} url_from Url where is received 
@@ -33,8 +39,49 @@ module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
  * @param {bool} use_in_http Handle In http
  * @param {bool} use_in_https Handle In https
  * @param {bool} exact_match Whether domain will be exaclty matched
+ * 
+ * @return {Object} Containing
+ * {
+ *   errors: [
+ *      {
+ *         params: {
+ *            "url_from": string
+ *            "url_to": string
+ *            "method": string
+ *            "status_code": int
+ *            "use_in_http": 0|1,
+ *            "use_in_https":0|1,
+ *            "exact_match":0|1
+ *         },
+ *         "error_type":'db',
+ *         "message": 'error_message'
+ *      }
+ *   ],
+ *   duplicates: [
+ *      {
+ *            "url_from": string
+ *            "url_to": string
+ *            "method": string
+ *            "status_code": int
+ *            "use_in_http": 0|1,
+ *            "use_in_https":0|1,
+ *            "exact_match":0|1
+ *      }
+ *   ],
+ *   saved_values: [
+ *      {
+ *            "url_from": string
+ *            "url_to": string
+ *            "method": string
+ *            "status_code": int
+ *            "use_in_http": 0|1,
+ *            "use_in_https":0|1,
+ *            "exact_match":0|1
+ *      }
+ *   ]
+ * }
  */
-module.exports.saveAdvancedRedirect=function(
+function saveAdvancedRedirect(
     db,
     url_from,
     url_to,
@@ -51,11 +98,15 @@ module.exports.saveAdvancedRedirect=function(
     exact_match = typeof exact_match == 'undefined'?false:exact_match;
 
     if(use_in_http == false && use_in_https == false){
-        throw Error("use in http or use in https must be both true");
+        throw new InvalidInputArgumentError("use in http or use in https must be both true");
     }
 
-    if(!stringIsAValidUrl(url_from) || !stringIsAValidUrl(url_to)){
-        throw Error("Invalid Urls");
+    if(!stringIsAValidUrl(url_from)){
+        throw new InvalidInputArgumentError("Url From is an invalid Url");
+    }
+
+    if(!stringIsAValidUrl(url_to)){
+        throw new InvalidInputArgumentError("Invalid value for url_to");
     }
 
     status_code = parseInt(status_code);
@@ -85,12 +136,14 @@ module.exports.saveAdvancedRedirect=function(
     if (Array.isArray(uniquemethods) && uniquemethods.length > 0){
         
         if(isRedirectStatusCodeAcceptable(uniquemethods,status_code)){
-            throw Error(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
+            throw new ActionDoesnotSupportStatusCode(`${status_code} redirection is supported only for methods "PUT,POST,PATCH".`);
         }
 
         const stmt = db.prepare(sql);
 
         const errors = [];
+        const saved_values = [];
+        const duplicates = [];
 
         uniquemethods.forEach((value)=>{
                         
@@ -111,16 +164,59 @@ module.exports.saveAdvancedRedirect=function(
             try {
                 stmt.run(params);
             } catch(e){
-                errors.push(e.toString());
+                if(e.code == 'SQLITE_CONSTRAINT_UNIQUE'){
+                    duplicates.push(params);
+                }
+                console.log(e);
+                errors.push({
+                    "params":params,
+                    "error_type":'db',
+                    "msg":e.toString()
+                });
             }
+            saved_values.push(params);
         });
 
-        if (errors.length > 0) {
-            throw new Error(errors.join());
+        if (
+            errors.length > 0 && (saved_values.length == 0 && duplicates.length == 0)
+        ) {
+            throw new SaveNewValuesFailed('db_errors',errors);
+        } else if(
+            errors.length == 0 && saved_values.length == 0 && duplicates.length > 0
+        ){
+            throw new SaveNewValuesFailed('duplicates',duplicates)
         }
 
+        return {
+            errors,
+            saved_values,
+            duplicates
+        };
+
     } else {
-        throw Error("No methods provided");
+        throw InvalidInputArgumentError("No methods provided");
     }
     
 }
+
+// eslint-disable-next-line jsdoc/require-returns
+/**
+ * 
+ * Save redirection setting for redirection from http to https.
+ * 
+ * @param {better_sql} db 
+ * @param {String} domain url that will be redirected into https 
+ * @param {String|Array} methods Http methods 
+ * @param {String|int} status_code Http Status Code 
+ * 
+ * @return object
+ */
+module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
+    var url_to_insert = url.parse(domain);
+    url_to_insert = url_to_insert.host;
+    status_code = parseInt(status_code);
+
+    return saveAdvancedRedirect(db,'http://'+url_to_insert,'https://'+url_to_insert,methods,status_code,true,false,false);
+};
+
+module.exports.saveAdvancedRedirect = saveAdvancedRedirect;
