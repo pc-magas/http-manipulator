@@ -27,8 +27,6 @@ const router = function (db,app) {
     })
 
     app.post('/settings/redirect/https',function(req,res){
-        
-        console.log(req.body);
         try{
             saveRedirectHttps(db,req.body.base_url,req.body.http_method,req.body.http_status);
             res.sendStatus(204);
@@ -38,9 +36,7 @@ const router = function (db,app) {
         }
     });
 
-    app.post('/settings/redirect/advanced',function(req,res){
-        
-        console.log(req.body);
+    app.post('/settings/redirect/advanced',function(req,res){        
         try{
             saveAdvancedRedirect(db,
                 req.body.url_from,
