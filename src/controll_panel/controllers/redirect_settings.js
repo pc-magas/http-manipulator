@@ -1,6 +1,6 @@
 const nunjunks = require('../views');
 const {getBaseUrl} = require('../../common/http_utils.js');
-const {saveRedirectHttps,saveAdvancedRedirect} = require('../models/redirect_model');
+const {saveRedirectHttps,saveAdvancedRedirect,InvalidInputArgumentError,ActionDoesnotSupportStatusCode,SaveNewValuesFailed} = require('../models/redirect_model');
 var {urlencoded} = require('express')
 
 const router = function (db,app) {
@@ -28,11 +28,19 @@ const router = function (db,app) {
 
     app.post('/settings/redirect/https',function(req,res){
         try{
-            saveRedirectHttps(db,req.body.base_url,req.body.http_method,req.body.http_status);
-            res.sendStatus(204);
+            const response = saveRedirectHttps(db,req.body.base_url,req.body.http_method,req.body.http_status);
+            res.status(200).json(response);
         } catch(err){
             console.error(err);
-            res.sendStatus(500);
+
+            if(err instanceof InvalidInputArgumentError || 
+                err instanceof ActionDoesnotSupportStatusCode
+            ){
+                res.status(400).json({"error":err.toString()});
+                return;
+            }
+
+            res.status(500).json({"error":"Unable to save into database"});
         }
     });
 
@@ -48,8 +56,8 @@ const router = function (db,app) {
                 req.body.exact_match
             );
             res.sendStatus(204);
-        } catch(err){
-            console.error(err);
+        } catch(error){
+            console.error(error);
             res.sendStatus(500);
         }
     });

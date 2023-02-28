@@ -25,6 +25,12 @@ class SaveNewValuesFailed extends Error
     }
 }
 
+module.exports = {
+    InvalidInputArgumentError,
+    ActionDoesnotSupportStatusCode,
+    SaveNewValuesFailed
+}
+
 // eslint-disable-next-line jsdoc/require-returns
 /**
  * 
@@ -165,7 +171,7 @@ function saveAdvancedRedirect(
                 "use_in_https":sqliteBoolVal(use_in_https),
                 "exact_match":sqliteBoolVal(exact_match)
             };
-            
+
             try {
                 stmt.run(params);
                 saved_values.push(params);

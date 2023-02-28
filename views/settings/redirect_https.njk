@@ -28,13 +28,15 @@
 
             $("#status").httpRedirect();
             $(".ajax_form").onSubmitAjax(
-                function(){
+                function(data){
                     console.log("Here");
-                    $("#displayMsg").displayMsg("Success");
+                    $("#displayMsg").displayMsg("Entry has been saved sucessfully");
                 },
-                function(){
-                    console.log("Error");
-                    $("#displayMsg").displayMsg("Error",true);
+                function( jqXHR, textStatus, errorThrown ){
+                    const respJson = JSON.parse( jqXHR.responseText );
+                    const message = respJson.error ?? "Could not save the request into the db";
+                    
+                    $("#displayMsg").displayMsg(message,true);
                 });
         });
 
