@@ -1,5 +1,5 @@
 const url = require('node:url');
-const {http_methods} = require('../../constants.js');
+const {http_methods,http_redirect} = require('../../constants.js');
 const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable, stringIsAValidUrl} = require('../../common/http_utils');
 const {sqliteBoolVal} = require('../../common/db.js');
 
@@ -111,6 +111,10 @@ function saveAdvancedRedirect(
 
     status_code = parseInt(status_code);
 
+    if(http_redirect.indexOf(status_code) < 0 ){
+        throw new InvalidInputArgumentError("Invalid http Status code");
+    }
+
     methods = sanitizeHttpMethods(methods);
 
 
@@ -163,6 +167,7 @@ function saveAdvancedRedirect(
             };
             try {
                 stmt.run(params);
+                saved_values.push(params);
             } catch(e){
                 if(e.code == 'SQLITE_CONSTRAINT_UNIQUE'){
                     duplicates.push(params);
@@ -174,17 +179,12 @@ function saveAdvancedRedirect(
                     "msg":e.toString()
                 });
             }
-            saved_values.push(params);
         });
 
         if (
-            errors.length > 0 && (saved_values.length == 0 && duplicates.length == 0)
+            errors.length > 0 && saved_values.length == 0
         ) {
             throw new SaveNewValuesFailed('db_errors',errors);
-        } else if(
-            errors.length == 0 && saved_values.length == 0 && duplicates.length > 0
-        ){
-            throw new SaveNewValuesFailed('duplicates',duplicates)
         }
 
         return {
@@ -214,7 +214,10 @@ function saveAdvancedRedirect(
 module.exports.saveRedirectHttps = function(db,domain,methods,status_code){
     var url_to_insert = url.parse(domain);
     url_to_insert = url_to_insert.host;
-    status_code = parseInt(status_code);
+
+    if(url_to_insert == null){
+        throw new InvalidInputArgumentError("Url is invalid");
+    }
 
     return saveAdvancedRedirect(db,'http://'+url_to_insert,'https://'+url_to_insert,methods,status_code,true,false,false);
 };

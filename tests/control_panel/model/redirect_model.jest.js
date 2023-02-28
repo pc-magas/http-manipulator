@@ -21,7 +21,7 @@ test("Save REDIRECT Http to https returning 301 on GET method",(done) => {
     let result = db_con.prepare("SELECT * from redirect").all();
     result = result.pop();
     expect(result.url_from).toEqual('google.com');
-    expect(result.url_to).toEqual('google.com');
+    expect(result.url_to).toEqual('https://google.com');
     expect(result.method).toEqual('GET');
     expect(parseInt(result.http_status_code)).toEqual(301);
     expect(result.exact_match).toEqual(0);
@@ -49,7 +49,7 @@ test("Save REDIRECT Http to https returning 302 on GET method",(done) => {
     let result = db_con.prepare("SELECT * from redirect").all();
     result = result.pop();
     expect(result.url_from).toEqual('google.com');
-    expect(result.url_to).toEqual('google.com');
+    expect(result.url_to).toEqual('https://google.com');
     expect(result.method).toEqual('GET');
     expect(parseInt(result.http_status_code)).toEqual(302);
     expect(result.exact_match).toEqual(0);
@@ -79,7 +79,7 @@ test("Save REDIRECT Http to https returning 307 on All http methods",(done) => {
     let result = db_con.prepare("SELECT * from redirect").all();
     result.forEach((item) => {
         expect(item.url_from).toEqual('google.com');
-        expect(item.url_to).toEqual('google.com');
+        expect(item.url_to).toEqual('https://google.com');
         expect(http_methods).toContain(item.method);
         expect(parseInt(item.http_status_code)).toEqual(307);
         expect(item.exact_match).toEqual(0);
@@ -110,7 +110,7 @@ test("Save REDIRECT Http to https returning 308 on All http methods",(done) => {
     let result = db_con.prepare("SELECT * from redirect").all();
     result.forEach((item) => {
         expect(item.url_from).toEqual('google.com');
-        expect(item.url_to).toEqual('google.com');
+        expect(item.url_to).toEqual('https://google.com');
         expect(http_methods).toContain(item.method);
         expect(parseInt(item.http_status_code)).toEqual(307);
         expect(item.exact_match).toEqual(0);
@@ -226,7 +226,7 @@ test("Save REDIRECT Http to https returning 301 on GET method (get as an array m
     let result = db_con.prepare("SELECT * from redirect").all();
     result = result.pop();
     expect(result.url_from).toEqual('google.com');
-    expect(result.url_to).toEqual('google.com');
+    expect(result.url_to).toEqual('https://google.com');
     expect(result.method).toEqual('GET');
     expect(parseInt(result.http_status_code)).toEqual(301);
     expect(result.exact_match).toEqual(0);
@@ -257,7 +257,7 @@ test("Save REDIRECT Http to https returning 307 on Multiple http methods with du
     const results = db_con.prepare("SELECT * from redirect").all();
     results.forEach((result) => {
         expect(result.url_from).toEqual('google.com');
-        expect(result.url_to).toEqual('google.com');
+        expect(result.url_to).toEqual('https://google.com');
         expect(expected_methods).toContain(result.method);
         expect(parseInt(result.http_status_code)).toEqual(307);
         expect(result.exact_match).toEqual(0);
