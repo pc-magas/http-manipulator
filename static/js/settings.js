@@ -80,7 +80,7 @@
     }
  
     
-    $.fn.displayMsg=function(msg,error){
+    $.fn.displayMsg=function(msg,type){
         console.log( this.get(0).tagName);
         if(
             this.get(0).tagName.toLowerCase() != 'div'
@@ -99,8 +99,23 @@
         dismissBtn.setAttribute('data-bs-dismiss','alert');
         dismissBtn.setAttribute('aria-label','Close');
 
+        let classname='alert-info';
+        switch(type){
+            case 'success':
+                classname="alert-success";
+                break;
+            case 'error':
+                classname="alert-danger";
+                break;
+            case 'warning':
+                classname="alert-warning";
+                break;
+            default:
+                classname='alert-info';
+        }
+
         element.classList.add( "alert", "alert-dismissible", "fade" ,"show");
-        element.classList.add(error?"alert-danger":"alert-success");
+        element.classList.add(classname);
         element.append(dismissBtn); 
         console.log(element);
 

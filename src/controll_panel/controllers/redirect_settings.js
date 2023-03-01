@@ -46,7 +46,7 @@ const router = function (db,app) {
 
     app.post('/settings/redirect/advanced',function(req,res){        
         try{
-            saveAdvancedRedirect(db,
+            const response = saveAdvancedRedirect(db,
                 req.body.url_from,
                 req.body.url_to,
                 req.body['http_method m-1'],
@@ -55,10 +55,18 @@ const router = function (db,app) {
                 req.body.use_in_https,
                 req.body.exact_match
             );
-            res.sendStatus(204);
-        } catch(error){
-            console.error(error);
-            res.sendStatus(500);
+            res.status(200).json(response);
+        } catch(err){
+            console.error(err);
+
+            if(err instanceof InvalidInputArgumentError || 
+                err instanceof ActionDoesnotSupportStatusCode
+            ){
+                res.status(400).json({"error":err.toString()});
+                return;
+            }
+
+            res.status(500).json({"error":"Unable to save into database"});
         }
     });
 };

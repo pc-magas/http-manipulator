@@ -14,9 +14,11 @@ app.use(express.urlencoded());
 app.use('/static',express.static(path.join(__dirname,'/../../static')));
 app.use('/static/css/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/css')));
 app.use('/static/css/boostrap/icon/',express.static(path.join(__dirname,'/../../node_modules/bootstrap-icons')));
-app.use('/static/js/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/js')));
 
+app.use('/static/js/boostrap',express.static(path.join(__dirname,'/../../node_modules/bootstrap/dist/js')));
 app.use('/static/js/jquery',express.static(path.join(__dirname,'/../../node_modules/jquery/dist')));
+app.use('/static/js/gridjs',express.static(path.join(__dirname,'/../../node_modules/gridjs/dist')));
+
 
 app.get('/settings',function(req,res){
     const url = getBaseUrl(req);

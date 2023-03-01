@@ -189,9 +189,7 @@ function saveAdvancedRedirect(
             }
         });
 
-        if (
-            errors.length > 0 && (saved_values.length == 0 || duplicates.length == 0)
-        ) {
+        if (errors.length > 0 && (saved_values.length == 0 || duplicates.length == 0)) {
             throw new SaveNewValuesFailed('db_errors',errors);
         }
 

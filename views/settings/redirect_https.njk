@@ -1,8 +1,14 @@
 {% extends "../layouts/settings.njk" %}
 
+{% block cssblock%}
+    {{ super() }}
+    <link href="/static/js/gridjs/theme/mermaid.css" rel="stylesheet" type="text/css" >
+{% endblock %}
+
 {% block jsblock %}
     {{ super() }}
     <script src='/static/js/settings.js'></script>
+    <script src='/static/js/gridjs/gridjs.umd.js'></script>
     <script>
         $(function(){
             $('.dropdown-select li').on('click', function(e){
@@ -29,14 +35,41 @@
             $("#status").httpRedirect();
             $(".ajax_form").onSubmitAjax(
                 function(data){
-                    console.log("Here");
-                    $("#displayMsg").displayMsg("Entry has been saved sucessfully");
+                    console.log(data);
+                    
+                    const titles=["Method",'Url from', 'Redirect to url',"Redirect status code"]
+
+                    if(data.saved_values.length > 0){
+                        $("#displayMsg").displayMsg("Entry has been saved sucessfully",'success');
+                        document.getElementById('success_tab').innerHTML = "";
+
+                        const table_data = data.saved_values.map(value => [value.method,value.url_from,value.url_to,value.status_code])
+                        new gridjs.Grid({
+                            columns: titles,
+                            data:table_data,
+                        }).render(document.getElementById('success_tab'));
+                    }
+
+                    if(data.duplicates.length > 0){
+                        $("#displayMsg").displayMsg("Some values could not be saved because already exist.",'warning');
+                        const table_data = data.duplicates.map(value => [value.method,value.url_from,value.url_to,value.status_code])
+                        document.getElementById('duplicates_tab').innerHTML = "";
+                        new gridjs.Grid({
+                            columns: titles,
+                            data:table_data,
+                        }).render(document.getElementById('duplicates_tab'));
+                    }
+
+                    if(data.errors.length > 0){
+                        $("#displayMsg").displayMsg("Some values could not be saved bues to internal error",'error');
+                    }
+
                 },
                 function( jqXHR, textStatus, errorThrown ){
                     const respJson = JSON.parse( jqXHR.responseText );
                     const message = respJson.error ?? "Could not save the request into the db";
                     
-                    $("#displayMsg").displayMsg(message,true);
+                    $("#displayMsg").displayMsg(message,'error');
                 });
         });
 
@@ -45,9 +78,11 @@
 {% endblock %}
 
 {% block main %}
-        <section class="page" id="redirect_https" role="tabpanel" aria-labelledby="redirect_https">
-            <h1>Redirect to Https</h1>
-            <div id="displayMsg"></div>
+
+        <h1>Redirect to Https</h1>
+        <section id="displayMsg" style="margin-bottom:1em;"></section>
+
+        <section id="redirect_https" style="margin-bottom:1em;">
             <form class="ajax_form" method="post" action="settings/redirect/https">
                 <div class="mb-3">
                     <div class="input-group">
@@ -74,5 +109,24 @@
                 <input type="hidden" id="http_method_val" name="http_method" value="GET" />
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
+        </section>
+        <section id="save_results" style="margin-bottom:1em;">
+            <h1>Results</h1>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#success_tab" type="button" role="tab" aria-controls="success_tab" aria-selected="true">Success</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link"  data-bs-toggle="tab" data-bs-target="#duplicates_tab" type="button" role="tab" aria-controls="duplicates_tab" aria-selected="true">Duplicates</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="success_tab" role="tabpanel" aria-labelledby="success-tab" tabindex="0">
+                    <span class="text-center">No values exist</span>
+                </div>
+                <div class="tab-pane fade show" id="duplicates_tab" role="tabpanel" aria-labelledby="duplicates_tab" tabindex="0">
+                    <span class="text-center">No values exist</span>
+                </div>
+            </div>
         </section>
 {% endblock %}
