@@ -701,12 +701,10 @@ test("Cannot save multiple times on https",(done) => {
     db_con.exec(sql);
 
     try{
-        redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',308,true,true,true);
+        var results = redirect.saveAdvancedRedirect(db_con,'https://google.com','https://yahoo.com','POST',308,true,true,true);
         // Method above should throw exception id not assume it as failing test
-        done(new Error("No error is thrown"));
     } catch(e) {
-        // Dummy assertion
-        expect(true).toEqual(true);
+       done(e)
     }
    
     console.log(db_con.prepare('SELECT * from redirect').all());
@@ -715,6 +713,19 @@ test("Cannot save multiple times on https",(done) => {
     count_result = count_result.pop();
     count_result = count_result.total;
     expect(count_result).toEqual(1);
+
+    expect(results.errors.length).toEqual(0);
+    expect(results.saved_values.length).toEqual(0);
+
+    expect(results.duplicates.length).toEqual(1);
+
+    const result = results.duplicates.pop();
+    expect(result.url_from).toEqual('https://google.com');
+    expect(result.url_to).toEqual('https://yahoo.com');
+    expect(result.status_code).toEqual(308);
+    expect(result.use_in_http).toEqual(1);
+    expect(result.use_in_https).toEqual(1);
+    expect(result.exact_match).toEqual(1);
 
     done();
 });

@@ -178,6 +178,7 @@ function saveAdvancedRedirect(
             } catch(e){
                 if(e.code == 'SQLITE_CONSTRAINT_UNIQUE'){
                     duplicates.push(params);
+                    return;
                 }
                 console.log(e);
                 errors.push({
@@ -189,7 +190,7 @@ function saveAdvancedRedirect(
         });
 
         if (
-            errors.length > 0 && saved_values.length == 0
+            errors.length > 0 && (saved_values.length == 0 || duplicates.length == 0)
         ) {
             throw new SaveNewValuesFailed('db_errors',errors);
         }
