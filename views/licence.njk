@@ -1,7 +1,25 @@
 {% extends "./layouts/main.njk" %}
 
+{% block cssblock %}
+    <style>
+        article {
+            background-color: lavender;
+            padding: 1.2em;
+        }
+
+        .center_licence {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<article style="background-color: lavender;padding: 1.2em;margin-left:3rem; margin-right:3rem;">
+<main class="container">
+<div class="center_licence">
+<article>
 <p>Copyright (c) 2022 Dimitrios Desyllas</p>
 
 <p>
@@ -26,4 +44,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 </p>
 </article>
+</div>
+</main>
 {% endblock %}
