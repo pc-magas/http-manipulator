@@ -6,11 +6,13 @@
     <title>{{title}}</title>
     <style>
         body {
-            min-width: fit-content;
+            min-width: 100%;
+            min-height: 100%;
             margin: 0px;
-            display: flex;
-            flex-direction: column;
+            height: 100%;
+            width: 100%;
         }
+
         header {
             align-self: flex-start;
             width: 100%;
@@ -20,6 +22,9 @@
             display: flex;
             justify-content: center;
             align-content: center;
+            flex: 0 1 auto;
+            padding-top: 0px;
+            padding-bottom: 0px;
         }
 
         #main_nav {
@@ -48,14 +53,23 @@
         }
 
         footer {
-            align-self: flex-end;
+            position: absolute;
+            bottom: 0px; 
             width: 100%;
             text-align: center;
             background-color: #ddd;
+            flex: 0 1 10px;
+            margin-bottom: 0px;
         }
 
         .center {
             text-align: center;
+        }
+
+        .fill-height {
+            min-height: 100%;
+            height:auto !important; /* cross-browser */
+            height: 100%; /* cross-browser */
         }
     </style>
     <link href="/static/css/boostrap/bootstrap.css" rel="stylesheet" type="text/css" />
@@ -104,10 +118,8 @@
             </a>
         </nav>
     </header>
-    <div class="container-fluid">
         {% block body %}
         {% endblock %}
-    </div>
     <footer>
         I am footer
     </footer>
