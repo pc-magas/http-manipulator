@@ -10,6 +10,9 @@ const configLoader = require('./common/config.js')
 const http_lib = require('./http.js');
 const db =  require('./common/db.js').createDb;
 
+/**
+ * Prints the help info regarding the app usage 
+ */
 function printHelp(){
   const help = `
   Http manipulator. An easy to use http manupulation system

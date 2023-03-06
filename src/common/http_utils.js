@@ -52,12 +52,17 @@ const stringIsAValidUrl = (s) => {
     } catch (err) {
       return false;
     }
-  };
+};
+
+const getReqMime = (req)=>{
+    return req.headers['Content-Type']??req.headers['content-type']??"uknown";
+}
 
 module.exports = {
     getProtocol,
     getBaseUrl,
     sanitizeHttpMethods,
     isRedirectStatusCodeAcceptable,
-    stringIsAValidUrl
+    stringIsAValidUrl,
+    getReqMime
 };

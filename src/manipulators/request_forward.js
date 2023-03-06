@@ -1,5 +1,5 @@
 const http = require('http');
-const https = require('http');
+const https = require('https');
 const connect = require('connect');
 
 const {getProtocol} = require('../common/http_utils');

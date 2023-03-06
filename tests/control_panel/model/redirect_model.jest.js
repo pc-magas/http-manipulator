@@ -666,8 +666,6 @@ test("Cannot save multiple times on http",(done) => {
         // expect(true).toEqual(true);
     }
    
-    console.log(db_con.prepare('SELECT * from redirect').all());
-
     let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
     count_result = count_result.pop();
     count_result = count_result.total;
@@ -707,8 +705,6 @@ test("Cannot save multiple times on https",(done) => {
        done(e)
     }
    
-    console.log(db_con.prepare('SELECT * from redirect').all());
-
     let count_result = db_con.prepare('SELECT count(*) as total from redirect').all();
     count_result = count_result.pop();
     count_result = count_result.total;
