@@ -33,7 +33,6 @@ module.exports.log_request = (db,use_in_https) =>{
                 "request_mime":getReqMime(req)
             });
             req.request_id = insert_result.lastInsertRowid;
-            console.log(req.request_id);
             next();
         } catch(e){
             next(e);
