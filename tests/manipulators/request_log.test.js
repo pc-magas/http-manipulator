@@ -9,35 +9,48 @@ test('HTTP GET logs data',(done)=>{
 
     const app = log_request(db,false);
     
-    app.use((req,res,next)=>{
-        console.log(req.request_id);
-        expect(req.request_id).toBeDefined();
+    app.use((err,req,res,next)=>{
+        expect(req.request_id).toBeDefined();      
 
-        try {
-
-            let result = db.prepare('SELECT * from requests where id = :id').all({"id":req.request_id});
-            
-            console.log(result);
-            expect(result.length).toEqual(1);
-            result = result.pop();
-            
-            expect(result.domain).toEqual('example.com');
-            expect(result.protocol,'https');
-            expect(result.method,'GET');
-            
-            done();
-        }catch(e){
-            done(e);
+        if(err){
+            done(err);
         }
 
-        res.writeHead(200);
-        res.end("".req.request_id);
+        res.on('finish', () => {
+            
+            try {
+                var result = db.prepare('SELECT * from requests where id = :id').all({"id":req.request_id});
+            }catch(e){
+                done(e);
+            }
+
+            expect(result.length).toEqual(1);
+            result = result.pop();
+                
+            expect(result.domain).toEqual('example.com');
+            expect(result.protocol).toEqual('http');
+            expect(result.method).toEqual('GET');
+
+            expect(result.status_code).toEqual(200);
+
+            expect(result.response_mime).toEqual('application/text');
+
+            done();
+        });
+
+        next();
+    });
+
+    app.use((req,res)=>{
+        res.writeHead(200,{
+            'content_type':'application/text',
+            'x-val': 3
+        }); 
+        res.end(""+req.request_id);
     });
 
     request(app)
-            .get('/mytest')
-            .set('Host','example.com')
-            .then((res)=>{           
-            });
-       
+        .get('/mytest')
+        .set('Host','example.com')
+        .then((res)=>{});
 })

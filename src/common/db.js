@@ -34,8 +34,8 @@ function createTables(db){
                 response_length_bytes INTEGER,
                 manupulated INTEGER CHECK(manupulated IN (0,1)) DEFAULT 0,
                 redirected_to TEXT,             
-                request_timestamp datetime default current_timestamp,
-                response_timestamp datetime
+                request_timestamp_unix_nanosecond INTEGER,
+                response_timestamp_unix_nanosecond datetime
             );
 
             CREATE TABLE IF NOT EXISTS http_headers (
@@ -43,6 +43,7 @@ function createTables(db){
                 name TEXT not null,
                 value TEXT not null,
                 request_id INTEGER,
+                is_response INTEGER CHECK(is_response IN (0,1)) DEFAULT 0,
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
 
