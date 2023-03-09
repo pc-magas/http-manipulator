@@ -5,8 +5,15 @@ const app = connect();
 app.use(function(req,res,next){
     req.id = 1;
     next();
+
+    console.log(req.headers);
+
     res.on('finish',()=>{
-        console.log("Headers",res.getHeaders());
+        const headers = res.getHeaders();
+        console.log(headers);
+        Object.keys(headers).forEach( key => {
+            console.log(key,headers[key]);
+        });
     })
 });
 

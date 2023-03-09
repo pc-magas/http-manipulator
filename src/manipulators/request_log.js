@@ -18,19 +18,24 @@ const updateResponse = (db,res,insertId) => {
     });
 
     transaction({
-            "status_code": res.status_code,
-            "response_timestamp": hrtime.bigint(),
-            'id': insertId
-        }
-    );
-
+        "status_code": res.status_code,
+        "response_timestamp": hrtime.bigint(),
+        'id': insertId
+    });
+        
     insertResponseHeaders(db,res,insertId);
 }
 
 const insertResponseHeaders = (db,res,insertId) => {
-     
+        
+    const headers = res.getHeaders();
+    
+    if(Object.keys(headers).length === 0 ){
+        return;
+    }
+
     const header_query = `
-        INSERT into http_headers values (request_id,name,value,is_response) VALUES (
+        INSERT into http_headers (request_id,name,value,is_response) VALUES (
             :request_id,
             :name,
             :values,
@@ -49,7 +54,10 @@ const insertResponseHeaders = (db,res,insertId) => {
     const updateResponseMimeType = db.prepare(updateContentTypeQuery);
 
     const transaction =  db.transaction((headers) => {
-        for (const {name,value} of headers){
+        
+        Object.keys(headers).forEach( name => {
+            const value = headers[name];
+
             headerInsert.run({
                 "name": name,
                 "value":value,
@@ -62,12 +70,37 @@ const insertResponseHeaders = (db,res,insertId) => {
                     'id': insertId
                 });
             }
-        }
+        });
     });
-
-    transaction(res.getHeaders());
+    transaction(headers);
 };
 
+const log_request_headers = (db,req,insertId) =>{
+    
+    const header_query = `
+        INSERT into http_headers (request_id,name,value,is_response) VALUES (
+            :request_id,
+            :name,
+            :value,
+            0
+        );
+    `;
+
+    const headerInsert = db.prepare(header_query);
+
+    const transaction =  db.transaction((headers) => {
+        Object.keys(headers).forEach( name => {
+            const value = headers[name];
+
+            headerInsert.run({
+                "name": name,
+                "value":value,
+                "request_id": insertId
+            });
+        });
+    });
+    transaction(req.headers);
+}
 
 module.exports.log_request = (db,use_in_https) =>{
     const log_module = connect();
@@ -107,6 +140,8 @@ module.exports.log_request = (db,use_in_https) =>{
             var insertId = insert_result.lastInsertRowid;
             req.request_id = insertId;
 
+            log_request_headers(db,req,insertId);
+
             res.on('finish', () => {
                 try{
                     updateResponse(db,res,insertId);
@@ -125,4 +160,3 @@ module.exports.log_request = (db,use_in_https) =>{
 
     return log_module;
 }
-
