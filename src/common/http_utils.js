@@ -55,7 +55,6 @@ const stringIsAValidUrl = (s) => {
 };
 
 const getReqMime = (req)=>{
-    console.log(req);
     return req.headers['Content-Type']??req.headers['content-type']??"uknown";
 }
 

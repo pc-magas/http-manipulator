@@ -21,6 +21,7 @@ function createTables(db){
                 method TEXT not null,
                 domain TEXT not null,
                 path TEXT not null,
+                path_without_params not null,
                 protocol TEXT not null CHECK( protocol IN ('http','https')),
                 response_status_code INTEGER CHECK( response_status_code IN (${http_status_code_as_string}) ),
                 request_type TEXT,
@@ -47,26 +48,10 @@ function createTables(db){
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
 
-            CREATE TABLE IF NOT EXISTS http_cookies (
+            CREATE TABLE IF NOT EXISTS request_http_params (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 request_id INTEGER,
-                header_id INTEGER,
-                name TEXT not null,
-                value TEXT,
-                expiration_timestamp TEXT,
-                http_only  INTEGER CHECK(http_only IN (0,1)),
-                secure INTEGER CHECK(http_only IN (0,1)),
-                same_site_policy TEXT,
-
-                FOREIGN KEY(request_id) REFERENCES requests(id)
-                FOREIGN KEY(header_id) REFERENCES headers(id)
-            );
-
-            CREATE TABLE IF NOT EXISTS http_params (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                request_id INTEGER,
-                url_param INTEGER CHECK(url_param IN (0,1)),
-                param_location INTEGER CHECK(param_location IN ('BODY','URL','HEADER')),
+                param_location INTEGER CHECK(param_location IN ('BODY','URL','COOKIE')),
                 name TEXT,
                 value TEXT,
                 value_in_file INTEGER CHECK(value_in_file IN (0,1)),

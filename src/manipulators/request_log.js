@@ -1,6 +1,9 @@
-const connect = require('connect');
 const { getReqMime } = require('../common/http_utils');
+
+const connect = require('connect');
 const { hrtime } = require('node:process');
+const url = require('url');
+
 
 const updateResponse = (db,res,insertId) => {
 
@@ -102,10 +105,36 @@ const log_request_headers = (db,req,insertId) =>{
     transaction(req.headers);
 }
 
+const log_url_params = (db,params,request_id) => {
+    const query = `
+        INSERT INTO 
+            request_http_params (request_id,param_location,name,value)
+        VALUES (
+            :request_id,
+            'URL',
+            :name,
+            :value
+        )
+    `;
+
+    const url_params_query = db.prepare(query);
+
+    Object.keys(params).forEach( param_name => {
+        const value = params['param_name'];
+        url_params_query.run({
+            'request_id':request_id,
+            'name':param_name,
+            'value': value
+        });
+    });
+
+};
+
 module.exports.log_request = (db,use_in_https) =>{
-    const log_module = connect();
-    
-    log_module.use(function(req,res,next){
+   
+    const app = connect();
+
+    app.use(function(req,res,next){
         
         const initialInsert = `
             INSERT INTO requests (
@@ -113,6 +142,7 @@ module.exports.log_request = (db,use_in_https) =>{
                 domain,
                 protocol,
                 path,
+                path_without_params,
                 request_mime,
                 request_timestamp_unix_nanosecond
             ) VALUES (
@@ -120,18 +150,22 @@ module.exports.log_request = (db,use_in_https) =>{
                 :domain,
                 :protocol,
                 :path,
+                :path_without_params,
                 :request_mime,
                 :insert_time
             ) RETURNING id;
         `;
         
         const initialInsertStmt  = db.prepare(initialInsert);
-        try{
+        try {
+
+            const queryData = url.parse(req.url, true);
 
             const insert_result = initialInsertStmt.run({
                 "method":req.method,
                 "domain":req.headers.host,
-                "path":req.url,
+                "path": queryData.href,
+                "path_without_params": queryData.pathname,
                 "protocol":use_in_https?'https':'http',
                 "request_mime":getReqMime(req),
                 'insert_time': hrtime.bigint()
@@ -140,10 +174,11 @@ module.exports.log_request = (db,use_in_https) =>{
             var insertId = insert_result.lastInsertRowid;
             req.request_id = insertId;
 
+            log_url_params(db,queryData.query,insertId);
             log_request_headers(db,req,insertId);
 
             res.on('finish', () => {
-                try{
+                try {
                     updateResponse(db,res,insertId);
                 } catch (e) {
                     next(e);
@@ -151,12 +186,11 @@ module.exports.log_request = (db,use_in_https) =>{
             });
 
             next();
-        } catch(e){
+        } catch(e) {
             next(e);
         }
     });
 
-
-
-    return log_module;
+    return app;
 }
+

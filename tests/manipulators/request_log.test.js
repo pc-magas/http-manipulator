@@ -1,4 +1,5 @@
 const request = require('supertest');
+const connect = require('connect');
 
 const {createDb} = require('../../src/common/db.js');
 const log_request = require('../../src/manipulators/request_log').log_request;
@@ -11,16 +12,15 @@ test('HTTP GET logs data', (done) => {
 
     const db = createDb(':memory:');
 
-    const app = log_request(db,false);
-    
+    const app = connect();
+    app.use(log_request(db,false));
+        
     app.use((err,req,res,next)=>{
         expect(req.request_id).toBeDefined();      
 
         if(err){
             done(err);
         }
-
-        console.log("Here");
 
         try {
             var result = db.prepare('SELECT * from requests where id = :id').all({"id":req.request_id});
@@ -49,33 +49,57 @@ test('HTTP GET logs data', (done) => {
         try {
             var result = db.prepare(`SELECT count(*) as count from requests where id = :id and name=host and value <> 'example.com'`).get({"id":req.request_id});
             result = result.pop();
-            expect(result.length).toEqual(0);
+            expect(result.count).toEqual(0);
         }catch(e){
             done(e);
         }
 
         try {
-            var result = db.prepare(`SELECT value as count from requests where id = :id and name='x-myheader' `).get({"id":req.request_id});
+            var result = db.prepare(`SELECT value from http_headers where requerst_id = :id and name='x-myheader' `).get({"id":req.request_id});
             result = result.pop();
             expect(parseInt(result.value)).toEqual(3);
         }catch(e){
             done(e);
         }
 
+        try {
+            var result = db.prepare(`SELECT * from http_params where request_id = :id `).get({"id":req.request_id});
+            expect(parseInt(result.length)).toEqual(2);
+
+            result.forEach((value)=>{
+                expect(['param1','param2']).toContain(value.name);
+                switch(value.name){
+                    case 'param1':
+                        expect(value.value).toBe('lorem_ipsum');
+                        break;
+                    case 'param2':
+                        expect(value.value).toBe('Jack Sprarrows');
+                        break;
+                    default:
+                        done(new Error("no defined values"));
+                }
+
+                expect(value.value_in_file).toBe(0);
+            });
+
+        } catch(e) {
+            done(e);
+        }
+
         next();
     });
 
-    app.use((req,res,next)=>{
+    app.use((req,res)=>{
         res.writeHead(200,{
-            'content_type':'application/text',
-            'x-val': 3
+            'Content-Type':'application/text',
+            'X-val': 3
         }); 
         res.end(""+req.request_id);
-        next();
     });
 
+
     request(app)
-        .get('/mytest')
+        .get('/mytest?param1=lorem_ipsum&param2=Jack%20Sprarrows')
         .set('Host','example.com')
         .set('X-MyHeader',3)
         .then((res)=>{

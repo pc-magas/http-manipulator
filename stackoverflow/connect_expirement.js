@@ -1,4 +1,5 @@
 const connect = require('connect');
+const url = require('url');
 
 const app = connect();
 
@@ -6,7 +7,11 @@ app.use(function(req,res,next){
     req.id = 1;
     next();
 
-    console.log(req.headers);
+    const queryData = url.parse(req.url, true).query;
+    console.log(queryData);
+    Object.keys(queryData).forEach((key)=>{
+        console.log(key,queryData[key]);
+    });
 
     res.on('finish',()=>{
         const headers = res.getHeaders();
