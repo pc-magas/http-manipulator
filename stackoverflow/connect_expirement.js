@@ -1,7 +1,10 @@
 const connect = require('connect');
 const url = require('url');
+const cookieParser = require('cookie-parser');
 
 const app = connect();
+
+app.use(cookieParser());
 
 app.use(function(req,res,next){
     req.id = 1;
@@ -13,6 +16,8 @@ app.use(function(req,res,next){
         console.log(key,queryData[key]);
     });
 
+    console.log(req.cookies);
+
     res.on('finish',()=>{
         const headers = res.getHeaders();
         console.log(headers);
@@ -22,7 +27,7 @@ app.use(function(req,res,next){
     })
 });
 
-app.use(function(req,res,next){
+app.use(function(req,res){
     console.log(req.id);
     res.setHeader("Content-Type",'application/text');
     res.writeHead(200,{'X-val':3});

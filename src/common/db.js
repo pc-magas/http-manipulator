@@ -33,7 +33,7 @@ function createTables(db){
                 response_body TEXT,
                 request_length_bytes INTEGER,
                 response_length_bytes INTEGER,
-                manupulated INTEGER CHECK(manupulated IN (0,1)) DEFAULT 0,
+                manipulated INTEGER CHECK(manipulated IN (0,1)) DEFAULT 0,
                 redirected_to TEXT,             
                 request_timestamp_unix_nanosecond INTEGER,
                 response_timestamp_unix_nanosecond datetime
@@ -51,10 +51,24 @@ function createTables(db){
             CREATE TABLE IF NOT EXISTS request_http_params (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 request_id INTEGER,
-                param_location INTEGER CHECK(param_location IN ('BODY','URL','COOKIE')),
+                param_location TEXT CHECK(param_location IN ('BODY','URL')),
                 name TEXT,
                 value TEXT,
-                value_in_file INTEGER CHECK(value_in_file IN (0,1)),
+                value_in_file INTEGER not null CHECK(value_in_file IN (0,1)) DEFAULT 0,
+                FOREIGN KEY(request_id) REFERENCES requests(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS http_cookies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                request_id INTEGER,
+                name TEXT not null,
+                value TEXT,
+                expiration_timestamp TEXT,
+                http_only  INTEGER CHECK(http_only IN (0,1)),
+                secure INTEGER CHECK(http_only IN (0,1)),
+                same_site_policy TEXT,
+                is_response INTEGER CHECK(is_response IN (0,1)) DEFAULT 0,
+                
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
 

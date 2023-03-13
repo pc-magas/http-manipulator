@@ -3,8 +3,15 @@ const { getReqMime } = require('../common/http_utils');
 const connect = require('connect');
 const { hrtime } = require('node:process');
 const url = require('url');
+const cookieParser = require('cookie-parser');
 
 
+/**
+ * Update request entry Upon response with nessesary values
+ * @param {*} db 
+ * @param {*} res 
+ * @param {Int} insertId 
+ */
 const updateResponse = (db,res,insertId) => {
 
     const query = `
@@ -21,7 +28,7 @@ const updateResponse = (db,res,insertId) => {
     });
 
     transaction({
-        "status_code": res.status_code,
+        "status_code": res.statusCode,
         "response_timestamp": hrtime.bigint(),
         'id': insertId
     });
@@ -29,6 +36,13 @@ const updateResponse = (db,res,insertId) => {
     insertResponseHeaders(db,res,insertId);
 }
 
+/**
+ * save response headers into the database
+ * @param {*} db 
+ * @param {*} res 
+ * @param {Int} insertId FK of the inserted request
+ * @returns 
+ */
 const insertResponseHeaders = (db,res,insertId) => {
         
     const headers = res.getHeaders();
@@ -78,6 +92,12 @@ const insertResponseHeaders = (db,res,insertId) => {
     transaction(headers);
 };
 
+/**
+ * Save request headers into the database
+ * @param {*} db 
+ * @param {*} req 
+ * @param {*} insertId 
+ */
 const log_request_headers = (db,req,insertId) =>{
     
     const header_query = `
@@ -105,7 +125,14 @@ const log_request_headers = (db,req,insertId) =>{
     transaction(req.headers);
 }
 
+/**
+ * Save url query params as seperate values in the database
+ * @param {} db Db connection
+ * @param {Object} params url 
+ * @param {Numeric} request_id Id containing the request 
+ */
 const log_url_params = (db,params,request_id) => {
+
     const query = `
         INSERT INTO 
             request_http_params (request_id,param_location,name,value)
@@ -120,7 +147,7 @@ const log_url_params = (db,params,request_id) => {
     const url_params_query = db.prepare(query);
 
     Object.keys(params).forEach( param_name => {
-        const value = params['param_name'];
+        const value = params[param_name];
         url_params_query.run({
             'request_id':request_id,
             'name':param_name,
@@ -130,7 +157,13 @@ const log_url_params = (db,params,request_id) => {
 
 };
 
-module.exports.log_request = (db,use_in_https) =>{
+/**
+ * Main Request Logger
+ * @param {*} db Database cionnection
+ * @param {boolean} use_in_https true Socket is listening to Https otherwize Http is used
+ * @returns connect.Server
+ */
+module.exports.log_request = (db,use_in_https) => {
    
     const app = connect();
 
@@ -172,23 +205,69 @@ module.exports.log_request = (db,use_in_https) =>{
             });
 
             var insertId = insert_result.lastInsertRowid;
-            req.request_id = insertId;
+            req.request_id = parseInt(insertId);
 
             log_url_params(db,queryData.query,insertId);
             log_request_headers(db,req,insertId);
-
-            res.on('finish', () => {
-                try {
-                    updateResponse(db,res,insertId);
-                } catch (e) {
-                    next(e);
-                }
-            });
 
             next();
         } catch(e) {
             next(e);
         }
+    });
+
+    app.use(cookieParser());
+    app.use((req,res,next) => {
+
+        if(req.cookies == null){
+            return next();
+        }
+
+        if(typeof req.request_id == 'undefined'){
+            return next();
+        }
+
+        const sql =`
+            INSERT INTO http_cookies 
+                (request_id,name,value,is_response)
+            VALUES
+                (:request_id,:name,:value,0);
+        `;
+
+        try{
+
+            
+            const stmt = db.prepare(sql);
+            
+            Object.keys(req.cookies).forEach((key)=>{
+                stmt.run({
+                    'request_id':req.request_id,
+                    'name': key,
+                    'value':req.cookies[key]
+                });
+            });
+        }catch(e){
+            return next(e)
+        }
+
+        next();
+    });
+
+    app.use((req,res,next) => {
+        
+        if(typeof req.request_id == 'undefined'){
+            return next();
+        }
+
+        res.on('finish', () => {
+            try {
+                updateResponse(db,res,req.request_id);
+            } catch (e) {
+                next(e);
+            }
+        });
+
+        next();
     });
 
     return app;

@@ -10,60 +10,43 @@ const log_request = require('../../src/manipulators/request_log').log_request;
  */
 test('HTTP GET logs data', (done) => {
 
+
     const db = createDb(':memory:');
 
     const app = connect();
     app.use(log_request(db,false));
         
-    app.use((err,req,res,next)=>{
+    app.use((req,res,next)=>{
         expect(req.request_id).toBeDefined();      
 
-        if(err){
-            done(err);
-        }
-
         try {
-            var result = db.prepare('SELECT * from requests where id = :id').all({"id":req.request_id});
-        }catch(e){
-            done(e);
-        }
-
-        expect(result.length).toEqual(1);
-        result = result.pop();
-            
-        expect(result.domain).toEqual('example.com');
-        expect(result.protocol).toEqual('http');
-        expect(result.method).toEqual('GET');
-
-        expect(result.status_code).toEqual(200);
-
-        try {
-            var result = db.prepare('SELECT count(*) as count from requests where id = :id').get({"id":req.request_id});
+            let result = db.prepare('SELECT * from requests where id = :id').all({"id":req.request_id});
+            expect(result.length).toEqual(1);
             result = result.pop();
-            expect(result).toBeGreaterThan(0);
+                
+            expect(result.domain).toEqual('example.com');
+            expect(result.protocol).toEqual('http');
+            expect(result.method).toEqual('GET');
         }catch(e){
-            done(e);
+           return done(e);
         }
 
-
         try {
-            var result = db.prepare(`SELECT count(*) as count from requests where id = :id and name=host and value <> 'example.com'`).get({"id":req.request_id});
-            result = result.pop();
+            let result = db.prepare(`SELECT count(*) as count from http_headers where request_id = :id and name='host' and value <> 'example.com'`).get({"id":req.request_id});
             expect(result.count).toEqual(0);
         }catch(e){
-            done(e);
+           return done(e);
         }
 
         try {
-            var result = db.prepare(`SELECT value from http_headers where requerst_id = :id and name='x-myheader' `).get({"id":req.request_id});
-            result = result.pop();
+            let result = db.prepare(`SELECT value from http_headers where request_id = :id and name='x-myheader' `).get({"id":req.request_id});
             expect(parseInt(result.value)).toEqual(3);
         }catch(e){
-            done(e);
+            return done(e);
         }
 
         try {
-            var result = db.prepare(`SELECT * from http_params where request_id = :id `).get({"id":req.request_id});
+            let result = db.prepare(`SELECT * from request_http_params where request_id = :id `).all({"id":req.request_id});
             expect(parseInt(result.length)).toEqual(2);
 
             result.forEach((value)=>{
@@ -83,9 +66,31 @@ test('HTTP GET logs data', (done) => {
             });
 
         } catch(e) {
-            done(e);
+          return done(e);
         }
 
+        try {
+            let result = db.prepare(`SELECT * from http_cookies where request_id = :id and is_response = 0`).all({"id":req.request_id});
+            expect(result.length).toBe(2);
+
+            result.forEach((value)=>{
+                expect(['c_param1','c_param2']).toContain(value.name);
+
+                switch(value.name){
+                    case 'c_param1':
+                        expect(value.value).toBe('12345667');
+                        break;
+                    case 'c_param2':
+                        expect(value.value).toBe('blah');
+                        break;
+                    default:
+                        done(new Error("no defined cookies"));
+                }
+            });
+
+        } catch(e) {
+            return done(e);
+        }
         next();
     });
 
@@ -102,8 +107,9 @@ test('HTTP GET logs data', (done) => {
         .get('/mytest?param1=lorem_ipsum&param2=Jack%20Sprarrows')
         .set('Host','example.com')
         .set('X-MyHeader',3)
-        .then((res)=>{
+        .set("Cookie",  ['c_param1=12345667', 'c_param2=blah'])
+        .end((err,res)=>{
+            if (err) return done(err);
             done();
         });
 });
-
