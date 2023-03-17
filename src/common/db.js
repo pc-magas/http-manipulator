@@ -64,9 +64,10 @@ function createTables(db){
                 name TEXT not null,
                 value TEXT,
                 expiration_timestamp TEXT,
+                max_age INT,
                 http_only  INTEGER CHECK(http_only IN (0,1)),
                 secure INTEGER CHECK(http_only IN (0,1)),
-                same_site_policy TEXT,
+                same_site_policy TEXT CHECK(same_site_policy IN ('Strict','Lax','None')),
                 is_response INTEGER CHECK(is_response IN (0,1)) DEFAULT 0,
                 
                 FOREIGN KEY(request_id) REFERENCES requests(id)

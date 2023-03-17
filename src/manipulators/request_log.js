@@ -1,10 +1,9 @@
-const { getReqMime } = require('../common/http_utils');
+const { getReqMime,parseResponseCookie } = require('../common/http_utils');
 
 const connect = require('connect');
 const { hrtime } = require('node:process');
 const url = require('url');
 const cookieParser = require('cookie-parser');
-
 
 /**
  * Update request entry Upon response with nessesary values
@@ -34,14 +33,73 @@ const updateResponse = (db,res,insertId) => {
     });
         
     insertResponseHeaders(db,res,insertId);
+    logResponseCookies(db,res,insertId);
+}
+
+/**
+ * Save reponse cookies into database
+ */
+const logResponseCookies = (db,res,insertId) => {
+    const headers = res.getHeaders();
+    
+    if(Object.keys(headers).length === 0 ){
+        return;
+    }
+
+    const query = `
+        INSERT INTO 
+            http_cookies(
+                request_id,
+                name,
+                value,
+                is_response,
+                http_only,
+                secure,
+                same_site_policy,
+                expiration_timestamp,
+                max_age
+            )
+        VALUES 
+        (
+            :request_id,
+            :name,
+            :value,
+            1,
+            :http_only,
+            :secure,
+            :same_site_policy,
+            :expiration_timestamp,
+            :max_age
+        ) 
+    `;
+
+    const statement = db.prepare(query);
+
+    Object.keys(headers).filter((key)=>key=='set-cookie').forEach( cookie_key => {
+        const cookie_value = parseResponseCookie(headers[cookie_key]);
+
+        if(cookie_value == {}) return;
+
+        statement.run(
+            {
+                "name":cookie_value.name,
+                "value":cookie_value.value,
+                "http_only":cookie_value.httpOnly?1:0,
+                "secure":cookie_value.secure?1:0,
+                "same_site_policy":cookie_value.samesite_policy,
+                "expiration_timestamp":cookie_value.expires,
+                "max_age": cookie_value.max_age,
+                "request_id":insertId
+            });
+
+    });
 }
 
 /**
  * save response headers into the database
  * @param {*} db 
  * @param {*} res 
- * @param {Int} insertId FK of the inserted request
- * @returns 
+ * @param {Int} insertId FK of the inserted request 
  */
 const insertResponseHeaders = (db,res,insertId) => {
         
@@ -234,9 +292,7 @@ module.exports.log_request = (db,use_in_https) => {
                 (:request_id,:name,:value,0);
         `;
 
-        try{
-
-            
+        try {
             const stmt = db.prepare(sql);
             
             Object.keys(req.cookies).forEach((key)=>{
@@ -246,7 +302,7 @@ module.exports.log_request = (db,use_in_https) => {
                     'value':req.cookies[key]
                 });
             });
-        }catch(e){
+        } catch(e) {
             return next(e)
         }
 

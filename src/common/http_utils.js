@@ -37,7 +37,7 @@ const sanitizeHttpMethods = (methods) => {
  * @param {Array} methods 
  * @param {Int|String} status_code
  * 
- * @returns {Bool} 
+ * @returns {boolean} 
  */
 const isRedirectStatusCodeAcceptable = (methods,status_code) => {
     status_code = parseInt(status_code);
@@ -45,6 +45,11 @@ const isRedirectStatusCodeAcceptable = (methods,status_code) => {
     return no_301_302_http_methods.reduce((acc,value)=> acc||methods.indexOf(value) != -1,false) && [301,302].indexOf(status_code) != -1;
 }
 
+/**
+ * Validate whether a value s is a string
+ * @param {*} s The incomming value that needs to be validated as URL 
+ * @returns {boolean}
+ */
 const stringIsAValidUrl = (s) => {
     try {
       new URL(s);
@@ -54,8 +59,80 @@ const stringIsAValidUrl = (s) => {
     }
 };
 
+/**
+ * Get request mime type
+ * @param {*} req Http request 
+ * @returns 
+ */
 const getReqMime = (req)=>{
     return req.headers['Content-Type']??req.headers['content-type']??"uknown";
+}
+
+/**
+ * Parses Response Cookies.
+ * 
+ * @param {String} cookie 
+ * @returns {Object}
+ * 
+ */
+const parseResponseCookie = (cookie) => {
+    
+    if(typeof cookie != "string") return {};
+    
+    cookie = cookie.trim();
+
+    if(!cookie) return {};
+
+    const cookieExplode = (cookie.split(';')).map((value)=>value.trim()).filter(value=>value!="");
+
+    return cookieExplode.reduce((acc,value) => {
+        value = value.split('=').map((exploded_value)=>exploded_value.trim());
+        
+        const key = value.shift();
+        // we do not care if undefined. Some cases will use it
+        const cookie_value = value.shift();
+
+        switch(key){
+            case 'HttpOnly':
+                acc.httpOnly = true;
+                break;
+            case 'Secure':
+                acc.secure = true;
+                break;
+            case 'Partitioned':
+                acc.partitioned = true;
+                break;
+            case 'Max-Age':
+                acc["max-age"]=cookie_value;
+                break;
+            case 'SameSite':
+                acc.samesite_policy = cookie_value;
+                break;
+            case 'Expires':
+                acc.expires = cookie_value;
+                break;
+            case 'Domain':
+                acc.domain = cookie_value;
+                break
+            case 'Path':
+                acc.path = cookie_value;
+                break;
+            default:
+                acc.name=key;
+                acc.value=cookie_value;
+        }
+
+        return acc;
+    },{
+        'httpOnly':false,
+        'samesite_policy':'Lax',
+        'secure': false,
+        'expires':null,
+        'partitioned': false,
+        'max-age':null
+    });
+
+
 }
 
 module.exports = {
@@ -64,5 +141,6 @@ module.exports = {
     sanitizeHttpMethods,
     isRedirectStatusCodeAcceptable,
     stringIsAValidUrl,
-    getReqMime
+    getReqMime,
+    parseResponseCookie
 };
