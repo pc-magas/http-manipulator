@@ -6,17 +6,12 @@ const app = connect();
 
 app.use(cookieParser());
 
+
 app.use(function(req,res,next){
     req.id = 1;
-    next();
-
-    const queryData = url.parse(req.url, true).query;
-    console.log(queryData);
-    Object.keys(queryData).forEach((key)=>{
-        console.log(key,queryData[key]);
-    });
 
     console.log(req.cookies);
+
 
     res.on('finish',()=>{
         const headers = res.getHeaders();
@@ -25,11 +20,12 @@ app.use(function(req,res,next){
             console.log(key,headers[key]);
         });
     })
+    next();
 });
 
 app.use(function(req,res){
-    console.log(req.id);
-    res.setHeader("Content-Type",'application/text');
+    console.log("id:",req.id);
+    res.setHeader("Content-Type",'text/plain');
     res.writeHead(200,{'X-val':3});
     res.end("jhello");
 });
