@@ -6,9 +6,8 @@ const {resolve} = require('path');
 const arg = require('arg');
 
 const control_panel = require('./controll_panel/index.js');
-const configLoader = require('./common/config.js').loadConfigFromFile;
-const http_lib = require('./http.js');
-const db =  require('./common/db.js').createDb;
+const loadService = require('./common/service_locator.js');
+
 
 /**
  * Prints the help info regarding the app usage 
@@ -39,12 +38,12 @@ if(args['--help']){
 }
 
 const config_file = args['--config_file'] || '/etc/http_manipulator/config.json';
-const config = configLoader(config_file);
+const service = loadService(config_file);
 
-const db_path = config.local_db;
-const database = db(db_path);
+const database = service.get('db');
+const config = service.get('config');
 
-const http = http_lib.createHttpServer();
+const http = http_lib.createHttpServer(service);
 http.listen(parseInt(config.http_port)||80);
 
 const ssl_path = config['ssl_path']
@@ -52,7 +51,7 @@ const ssl_path = config['ssl_path']
 const default_cert = resolve(ssl_path,'default.cert')
 const default_key = resolve(ssl_path,'default.key')
 
-const https = http_lib.createHttpsServer(database,default_key,default_cert)
+const https = http_lib.createHttpsServer(service,default_key,default_cert)
 const https_port = config['https_port']||443
 https.listen(https_port)
 

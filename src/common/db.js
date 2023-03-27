@@ -26,15 +26,9 @@ function createTables(db){
                 response_status_code INTEGER CHECK( response_status_code IN (${http_status_code_as_string}) ),
                 request_type TEXT,
                 request_mime TEXT,
-                response_mime TEXT,
-                request_raw TEXT,
-                response_raw TEXT,
-                request_body TEXT,
-                response_body TEXT,
+                response_mime TEXT,    
                 request_length_bytes INTEGER,
                 response_length_bytes INTEGER,
-                manipulated INTEGER CHECK(manipulated IN (0,1)) DEFAULT 0,
-                redirected_to TEXT,             
                 request_timestamp_unix_nanosecond INTEGER,
                 response_timestamp_unix_nanosecond datetime
             );
@@ -72,6 +66,7 @@ function createTables(db){
                 
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
+
 
 
             CREATE table IF NOT EXISTS redirect (

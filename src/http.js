@@ -5,17 +5,19 @@ const connect = require('connect');
 
 const redirect = require('./manipulators/redirect.js');
 const request_forward = require('./manipulators/request_forward.js');
+const request_log = require('./manipulators/request_log.js');
 
 /**
  * Create an Https server with tls cert management
- * @param {*} db Sqlite database where ssl info is stored 
+ * @param {*} serviceLocator The service locator app
  * @param {*} default_key Default path for generic SSL key
  * @param {*} default_cert Default path for generic SSL cert
  * @returns A https connection where will listen to.
  */
-function createHttpsServer(db,default_key,default_cert){
+function createHttpsServer(serviceLocator,default_key,default_cert){
 
   const secureContext = {}
+  const db = serviceLocator.get('db');
 
   const certs = db.prepare("SELECT * from certs").all();
   certs.forEach(function(row) {
@@ -52,14 +54,27 @@ function createHttpsServer(db,default_key,default_cert){
   };
   
   const app = connect();
+  
+  // Place middlewares here
+  app.use(request_log(serviceLocator,true));
   app.use(redirect(db,true));
   app.use(request_forward.forward_default);
+
   return https.createServer(options,app);
 }
 
-function createHttpServer(db) {
+/**
+ * Create an http server
+ * @param {*} serviceLocator 
+ * @returns 
+ */
+function createHttpServer(serviceLocator) {
+
   const app = connect();
-  app.use(redirect(db,false));
+  
+  // Place middlewares here
+  app.use(request_log(serviceLocator,true));
+  app.use(redirect(serviceLocator.get('db'),false));
   app.use(request_forward.forward_default);
 
   return http.createServer(app);
