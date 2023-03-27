@@ -5,7 +5,7 @@ const path = require('path');
  * @param {String} config_path Path where config file exists
  * @returns {Object} with parsed Json 
  */
-function loadConfig(config_path) {
+function loadConfigFromFile(config_path) {
     
     const path_cwd = path.normalize(path.join(process.cwd(),config_path));
     
@@ -21,13 +21,24 @@ function loadConfig(config_path) {
         config_path = path_cwd;
     }
 
-    const json=JSON.parse(fs.readFileSync(config_path));
+    return parseConfig(fs.readFileSync(config_path));
+}
+
+/**
+ * Parses Json and pre-fills with default values the config object
+ * @param {String} jsonString The read jsoncontents as string
+ * @returns {Object}
+ */
+function parseConfig(jsonString){
+    const json=JSON.parse(jsonString);
 
     // Loading defaults
     json.local_db=json.local_db||'/etc/http_manipulator/db.sqlite'
     json.ssl_path=json.ssl_path||"/etc/http_manipulator/ssl/"
+    json.save_path=json.save_path||"/var/"
 
     return json;
 }
 
-module.exports = loadConfig;
+module.exports.loadConfigFromFile = loadConfigFromFile;
+module.exports.parseConfig = parseConfig

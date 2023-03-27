@@ -6,7 +6,7 @@ const {resolve} = require('path');
 const arg = require('arg');
 
 const control_panel = require('./controll_panel/index.js');
-const configLoader = require('./common/config.js')
+const configLoader = require('./common/config.js').loadConfigFromFile;
 const http_lib = require('./http.js');
 const db =  require('./common/db.js').createDb;
 
