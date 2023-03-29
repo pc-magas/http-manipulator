@@ -35,8 +35,8 @@ function parseConfig(jsonString){
     // Loading defaults
     json.local_db=json.local_db||'/etc/http_manipulator/db.sqlite'
     json.ssl_path=json.ssl_path||"/etc/http_manipulator/ssl/"
-    json.save_path=json.save_path||"/var/"
-
+    json.save_path=json.save_path||"/var/cache/www"
+    
     return json;
 }
 

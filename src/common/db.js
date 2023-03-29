@@ -26,9 +26,10 @@ function createTables(db){
                 response_status_code INTEGER CHECK( response_status_code IN (${http_status_code_as_string}) ),
                 request_type TEXT,
                 request_mime TEXT,
-                response_mime TEXT,    
-                request_length_bytes INTEGER,
-                response_length_bytes INTEGER,
+                response_mime TEXT,
+                response_mime_tetected TEXT,
+                raw_request_body_file TEXT,
+                parsed_request_body_file TEXT,
                 request_timestamp_unix_nanosecond INTEGER,
                 response_timestamp_unix_nanosecond datetime
             );

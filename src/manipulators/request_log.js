@@ -1,9 +1,11 @@
-const { getReqMime,parseResponseCookie } = require('../common/http_utils');
+const { hrtime } = require('node:process');
+
+const { getReqMime,parseResponseCookie,detectBodyMime } = require('../common/http_utils');
 
 const connect = require('connect');
-const { hrtime } = require('node:process');
 const url = require('url');
 const cookieParser = require('cookie-parser');
+const fs  = require('node:fs');
 
 /**
  * Update request entry Upon response with nessesary values
@@ -38,6 +40,9 @@ const updateResponse = (db,res,insertId) => {
 
 /**
  * Save reponse cookies into database
+ * @param {*} db 
+ * @param {*} res 
+ * @param {Int} insertId  
  */
 const logResponseCookies = (db,res,insertId) => {
     const headers = res.getHeaders();
@@ -119,14 +124,7 @@ const insertResponseHeaders = (db,res,insertId) => {
     `
     const headerInsert = db.prepare(header_query);
 
-    const updateContentTypeQuery = `
-        UPDATE requests SET 
-            response_mime = :response_mime
-        WHERE 
-            id = :id
-    `
 
-    const updateResponseMimeType = db.prepare(updateContentTypeQuery);
 
     const transaction =  db.transaction((headers) => {
         
@@ -138,13 +136,6 @@ const insertResponseHeaders = (db,res,insertId) => {
                 "value":value,
                 "request_id": insertId
             });
-
-            if(name.toLowerCase() == 'content-type'){
-                updateResponseMimeType.run({
-                    "response_mime": value,
-                    'id': insertId
-                });
-            }
         });
     });
     transaction(headers);
@@ -215,63 +206,127 @@ const log_url_params = (db,params,request_id) => {
 
 };
 
-/**
- * Main Request Logger
- * @param {*} db Database cionnection
- * @param {boolean} use_in_https true Socket is listening to Https otherwize Http is used
- * @returns connect.Server
- */
-module.exports.log_request = (db,use_in_https) => {
+
+const log_request_body = (db,path,req,insert_id,callback)=> {
    
-    const app = connect();
+    const update_request_detected_mime = (mime,path)=>{
+        const detectedMimeSql = `UPDATE requests SET response_mime_tetected=:mime,parsed_request_body_file=:path WHERE id = :id`
+        const stmt = db.prepare(detectedMimeSql);
+        stmt.run({
+            'id':insert_id,
+            'mime':mime,
+            'path':path
+        });
+    }
 
-    app.use(function(req,res,next){
-        
-        const initialInsert = `
-            INSERT INTO requests (
-                method,
-                domain,
-                protocol,
-                path,
-                path_without_params,
-                request_mime,
-                request_timestamp_unix_nanosecond
-            ) VALUES (
-                :method,
-                :domain,
-                :protocol,
-                :path,
-                :path_without_params,
-                :request_mime,
-                :insert_time
-            ) RETURNING id;
-        `;
-        
-        const initialInsertStmt  = db.prepare(initialInsert);
-        try {
+    const path_to_save = path.join(path,insert_id+"_body.raw");
+    const parsedPath = path.join(path,insert_id+"_body");
 
-            const queryData = url.parse(req.url, true);
+    var body = [];
+    
+    req.on('data',(data)=> body.push(data));
+    req.on('end',()=>{
+        body = body.join();
+        if(body){
+            fs.writeFileSync(path_to_save,body);
 
-            const insert_result = initialInsertStmt.run({
+            const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
+            const stmt = db.prepare(bodyPathSql);
+            stmt.run({
+                'id':insert_id,
+                "path":path_to_save
+            });
+
+            detectBodyMime(body,(err,mime,extention,buffer)=>{
+                if (err) {return;}
+
+                var Readable = require('stream').Readable;
+                const s = new Readable()
+                s.push(buffer)   
+                s.push(null) 
+                const finalPath = parsedPath+'.'+extention
+                s.pipe(fs.createWriteStream(finalPath));
+
+                update_request_detected_mime(mime,finalPath);
+            });
+
+            
+            
+        }
+   });
+}
+
+const request_log = (db,req,use_in_https,callback) => {
+    const initialInsert = `
+        INSERT INTO requests (
+            method,
+            domain,
+            protocol,
+            path,
+            path_without_params,
+            request_mime,
+            request_timestamp_unix_nanosecond,
+        ) VALUES (
+            :method,
+            :domain,
+            :protocol,
+            :path,
+            :path_without_params,
+            :request_mime,
+            :insert_time,
+        ) RETURNING id;
+    `;
+
+  
+   
+
+    const initialInsertStmt  = db.prepare(initialInsert);
+    
+    const queryData = url.parse(req.url, true);
+    var insertId = null;
+    
+    const transaction = db.transaction(() => {
+ 
+        const insert_result = initialInsertStmt.run({
                 "method":req.method,
                 "domain":req.headers.host,
                 "path": queryData.href,
                 "path_without_params": queryData.pathname,
                 "protocol":use_in_https?'https':'http',
-                "request_mime":getReqMime(req),
-                'insert_time': hrtime.bigint()
-            });
+                "request_mime":getReqMime(req)});
+        
+        var insertId = insert_result.lastInsertRowid;
 
-            var insertId = insert_result.lastInsertRowid;
-            req.request_id = parseInt(insertId);
+        log_url_params(db,queryData.query,insertId);
+        log_request_headers(db,req,insertId);
+    });
 
-            log_url_params(db,queryData.query,insertId);
-            log_request_headers(db,req,insertId);
+    transaction();
+    callback(null,insertId);
+}
 
+/**
+ * Main Request Logger
+ * @param {*} serviceLocator Database cionnection
+ * @param {boolean} use_in_https true Socket is listening to Https otherwize Http is used
+ * @returns connect.Server
+ */
+module.exports.log_request_and_response = (serviceLocator,use_in_https) => {
+   
+    const db = serviceLocator.get('db');
+    const savePath = serviceLocator.get('config').http_data_save_path;
+
+    const app = connect();
+
+    app.use(function(req,res,next){
+                
+        request_log(db,req,use_in_https,(err,insert_id)=>{
+            if(err){
+               return next(err);
+            }
+            req.insertId=insert_id;
             next();
-        } catch(e) {
-            next(e);
-        }
+        });
     });
 
     app.use(cookieParser());
@@ -308,6 +363,13 @@ module.exports.log_request = (db,use_in_https) => {
 
         next();
     });
+
+    app.use((req,res,next)=>{
+        log_request_body(db,savePath,path,(err)=>{
+            if(err) { return next(err)}
+            next();
+        })
+    })
 
     app.use((req,res,next) => {
         

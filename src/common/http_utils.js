@@ -1,5 +1,10 @@
 const {no_301_302_http_methods} = require('../constants.js');
 
+const mmm = require('mmmagic');
+const mime = require('mime-types');
+const {Buffer} = require("node:buffer");
+
+
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;
     
@@ -131,8 +136,32 @@ const parseResponseCookie = (cookie) => {
         'partitioned': false,
         'max-age':null
     });
+}
 
+/**
+ * Detects mime type and file extention from request body
+ * @param {String} body request Body 
+ * @param {Function} callback (err,mime,extention,dataBuffer)  
+ */
+const detectBodyMime = (body,callback) => {
+    let buffer = Buffer.from(body,'base64');
+  
+    const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 
+    magic.detect(buffer, function(err, result) {
+        
+        if (err) {  return callback(err); }
+
+        if(result == 'application/octet-stream'){
+            buffer = Buffer.from(body);
+            return magic.detect(buffer, function(err, result) {
+                if (err) {return callback(err);}
+                return callback(null,result,mime.extension(result),buffer);
+            });
+        } 
+        
+        callback(null,result,mime.extension(result,buffer))
+    });
 }
 
 module.exports = {
@@ -142,5 +171,6 @@ module.exports = {
     isRedirectStatusCodeAcceptable,
     stringIsAValidUrl,
     getReqMime,
-    parseResponseCookie
+    parseResponseCookie,
+    detectBodyMime
 };
