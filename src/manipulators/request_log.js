@@ -1,11 +1,12 @@
 const { hrtime } = require('node:process');
 
-const { getReqMime,parseResponseCookie,detectBodyMime } = require('../common/http_utils');
+const { getReqMime,parseResponseCookie,detectBodyMime,checkEncodeURI } = require('../common/http_utils');
 
 const connect = require('connect');
 const url = require('url');
 const cookieParser = require('cookie-parser');
 const fs  = require('node:fs');
+const busboy = require('busboy');
 
 /**
  * Update request entry Upon response with nessesary values
@@ -225,7 +226,8 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
     var body = [];
     
     req.on('data',(data)=> body.push(data));
-    req.on('end',()=>{
+
+    req.on('end',() => {
         body = body.join();
         if(body){
             fs.writeFileSync(path_to_save,body);
@@ -237,7 +239,64 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
                 "path":path_to_save
             });
 
-            detectBodyMime(body,(err,mime,extention,buffer)=>{
+            const urlEncoded = checkEncodeURI(body);
+            if(
+                urlEncoded ||
+                (typeof req.headers['content-type']!== 'undefined' && req.headers['content-type'] === 'multipart/formdata')
+            ){
+
+                const mime = urlEncoded?'application/x-www-form-urlencoded':req.headers['content-type'];
+                update_request_detected_mime(mime,null);
+                const bb = busboy({ headers: mime });
+
+                const sql = `
+                    INSERT INTO
+                        request_http_params (request_id,name,value,value_in_file,param_location)
+                    VALUES (
+                        :id,
+                        :name,
+                        :value,
+                        :value_in_file,
+                        'BODY'
+                    )
+                `;
+
+                const stmt = db.prepare(sql);
+                bb.on('file', (name, file, info) => {
+                    const { filename } = info;
+
+                    const multipart_Uploads = path.join(path,insert_id,"multipart",filename);
+
+                    const fstream = fs.createWriteStream(multipart_Uploads);
+                    file.pipe(fstream);
+                    fstream.on('close', function () {    
+                       stmt.execute({
+                        'id':insert_id,
+                        'name':name,
+                        'value':multipart_Uploads,
+                        'value_in_file':1
+                       });
+                    });
+                });
+
+                bb.on('field', (name, val, info) => {
+                    stmt.execute({
+                        'id':insert_id,
+                        'name':name,
+                        'value':val,
+                        'value_in_file':0
+                       });
+                });
+
+                bb.on('finish',()=>{
+                    callback(null);
+                });
+
+                req.pipe(req.busboy);
+                return;
+            }
+
+            return detectBodyMime(body,(err,mime,extention,buffer)=>{
                 if (err) {return;}
 
                 var Readable = require('stream').Readable;
@@ -248,10 +307,8 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
                 s.pipe(fs.createWriteStream(finalPath));
 
                 update_request_detected_mime(mime,finalPath);
-            });
-
-            
-            
+                callback(null);
+            });            
         }
    });
 }
@@ -365,7 +422,7 @@ module.exports.log_request_and_response = (serviceLocator,use_in_https) => {
     });
 
     app.use((req,res,next)=>{
-        log_request_body(db,savePath,path,(err)=>{
+        log_request_body(db,savePath,req,(err)=>{
             if(err) { return next(err)}
             next();
         })

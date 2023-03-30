@@ -1,9 +1,21 @@
+const os = require('os');
+
 const request = require('supertest');
 const connect = require('connect');
+const serviceLocator = require('servicelocator');
 
 const {createDb} = require('../../src/common/db.js');
 const log_request = require('../../src/manipulators/request_log').log_request_and_response;
 
+
+beforeEach(() => {
+    const db = createDb(':memory:');
+    serviceLocator.register('db',db);
+    serviceLocator.register('config',{
+        'http_data_save_path':os.tmpdir()        
+    });
+
+});
 /**
  * Cannot test response headers despite they work at:
  * stackoverflow/connect_expirement.js
@@ -14,7 +26,7 @@ test('HTTP GET logs data', (done) => {
     const db = createDb(':memory:');
 
     const app = connect();
-    app.use(log_request(db,false));
+    app.use(log_request(serviceLocator,false));
         
     app.use((req,res,next)=>{
         expect(req.request_id).toBeDefined();      
@@ -117,11 +129,8 @@ test('HTTP GET logs data', (done) => {
 
 test('HTTP POST logs data', (done) => {
 
-
-    const db = createDb(':memory:');
-
     const app = connect();
-    app.use(log_request(db,false));
+    app.use(log_request(serviceLocator,false));
         
     app.use((req,res,next)=>{
         try{

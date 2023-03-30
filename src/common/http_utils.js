@@ -164,6 +164,15 @@ const detectBodyMime = (body,callback) => {
     });
 }
 
+/**
+ * https://stackoverflow.com/a/48394500
+ * @param {String} str 
+ * @returns Boolean
+ */
+const checkEncodeURI = (str) => {
+    return /\%/i.test(str);
+}
+
 module.exports = {
     getProtocol,
     getBaseUrl,
@@ -172,5 +181,6 @@ module.exports = {
     stringIsAValidUrl,
     getReqMime,
     parseResponseCookie,
-    detectBodyMime
+    detectBodyMime,
+    checkEncodeURI
 };
