@@ -11,7 +11,7 @@ test("detectsBase64EncodedImage",(done)=>{
     
     detectBodyMime(content.toString(),(err,mime,extention)=>{
         expect(mime).toBe('image/jpeg');
-        expect(extention).toBe('jpg');
+        expect(extention).toBe('jpeg');
         expect(err).toBe(null);
 
         done();
@@ -22,8 +22,8 @@ test("detectsBase64EncodedJson",(done)=>{
     const content =  Buffer.from("{\"param\":1}", 'utf8');
     
     detectBodyMime(content.toString('base64'),(err,mime,extention)=>{
-        expect(mime).toBe('image/jpeg');
-        expect(extention).toBe('jpg');
+        expect(mime).toBe('application/json');
+        expect(extention).toBe('json');
         expect(err).toBe(null);
 
         done();
@@ -34,11 +34,52 @@ test("detectsBase64EncodedJson",(done)=>{
 test("detectsJson",(done)=>{
     const content = "{\"param\":1}";
     
-    detectBodyMime(content.toString('base64'),(err,mime,extention)=>{
-        expect(mime).toBe('image/jpeg');
-        expect(extention).toBe('jpg');
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect(mime).toBe('application/json');
+        expect(extention).toBe('json');
         expect(err).toBe(null);
 
         done();
     });
 });
+
+test("detectsXml",(done)=>{
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
+    <note>
+      <to>Tove</to>
+      <from>Jani</from>
+      <heading>Reminder</heading>
+      <body>Don't forget me this weekend!</body>
+    </note>
+    `;
+
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect(['application/xml','text/xml']).toContain('mime');
+        expect(extention).toBe('xml');
+        expect(err).toBe(null);
+
+        done();
+    });
+})
+
+test("detectsXmlBase64 encoded",(done)=>{
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
+    <note>
+      <to>Tove</to>
+      <from>Jani</from>
+      <heading>Reminder</heading>
+      <body>Don't forget me this weekend!</body>
+    </note>
+    `;
+
+    const base64EncodedXml = Buffer.from(content).toString('base64');
+
+    detectBodyMime(base64EncodedXml,(err,mime,extention)=>{
+        expect(['application/xml','text/xml']).toContain('mime');
+        expect(extention).toBe('xml');
+        expect(err).toBe(null);
+
+        done();
+    });
+})
+
