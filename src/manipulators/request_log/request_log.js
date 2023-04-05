@@ -1,6 +1,6 @@
 const { hrtime } = require('node:process');
 
-const { getReqMime,parseResponseCookie,detectBodyMime,checkEncodeURI } = require('../common/http_utils');
+const { getReqMime,parseResponseCookie,detectBodyMime,checkEncodeURI } = require('../../common/http_utils');
 
 const connect = require('connect');
 const url = require('url');

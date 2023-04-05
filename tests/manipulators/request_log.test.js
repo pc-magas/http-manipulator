@@ -5,7 +5,7 @@ const connect = require('connect');
 const serviceLocator = require('servicelocator');
 
 const {createDb} = require('../../src/common/db.js');
-const log_request = require('../../src/manipulators/request_log').log_request_and_response;
+const log_request = require('../../src/manipulators/request_log/request_log.js').log_request_and_response;
 
 
 beforeEach(() => {

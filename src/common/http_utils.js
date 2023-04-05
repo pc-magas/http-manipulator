@@ -138,13 +138,19 @@ const parseResponseCookie = (cookie) => {
     });
 }
 
+const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
+const isBase64 = (str) => {
+    const cleanedStr = str.replace(/[\n\r\s]+/g, '');
+    return base64RegExp.test(cleanedStr);
+};
+
 /**
  * Detects mime type and file extention from request body
  * @param {String} body request Body 
  * @param {Function} callback (err,mime,extention,dataBuffer)  
  */
 const detectBodyMime = (body,callback) => {
-    let buffer = Buffer.from(body,'base64');
+    let buffer = isBase64(body)?Buffer.from(body,'base64'):Buffer.from(body);
   
     const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 
@@ -152,15 +158,20 @@ const detectBodyMime = (body,callback) => {
         
         if (err) {  return callback(err); }
 
-        if(result == 'application/octet-stream'){
-            buffer = Buffer.from(body);
-            return magic.detect(buffer, function(err, result) {
-                if (err) {return callback(err);}
-                return callback(null,result,mime.extension(result),buffer);
-            });
-        } 
+        if(result == 'text/plain') {
+            try {
+                let text = buffer.toString();
+                if (text.codePointAt(0) === 0xFEFF) { // UTF8 BOM
+                    text = text.substring(1);
+                }
+                JSON.parse(text);
+                return callback(null,'application/json','json',buffer);
+            }catch(e){
+                // Do nothing keep it silence we need to just verify that content is Json
+            }
+        }
         
-        callback(null,result,mime.extension(result,buffer))
+        return callback(null,result,mime.extension(result),buffer);
     });
 }
 
@@ -170,7 +181,7 @@ const detectBodyMime = (body,callback) => {
  * @returns Boolean
  */
 const checkEncodeURI = (str) => {
-    return /\%/i.test(str);
+    return /^((.*)=(.*)\&(.*)=(.*)\&?)+$/.test(str) || /^(.*)=(.*)$/.test(str);
 }
 
 module.exports = {
