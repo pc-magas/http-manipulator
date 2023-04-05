@@ -1,25 +1,35 @@
 const connect = require('connect');
-const url = require('url');
-const cookieParser = require('cookie-parser');
+const fs = require('fs');
+
+const { detectBodyMime } = require('../src/common/http_utils');
+
 
 const app = connect();
-
-app.use(cookieParser());
-
 
 app.use(function(req,res,next){
     req.id = 1;
 
-    console.log(req.cookies);
+    var body = [];
+    
+    req.on('data',(data) =>
+    {
+        console.log('Getting Body');
+        body.push(data)
+    });
 
-
-    res.on('finish',()=>{
-        const headers = res.getHeaders();
-        console.log(headers);
-        Object.keys(headers).forEach( key => {
-            console.log(key,headers[key]);
-        });
-    })
+    req.on('end',() => {
+        body = Buffer.concat(body).toString();
+        console.log(req.headers['content-type']);
+        if(body){
+            detectBodyMime(body,(err,mime,extention,buffer)=>{
+                    if (err) {return;}
+                    console.log(mime,extention);
+                    // console.log(buffer.toString());
+            }); 
+        }
+        
+      
+    });
     next();
 });
 
