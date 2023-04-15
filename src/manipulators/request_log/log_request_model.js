@@ -1,14 +1,15 @@
-const { getReqMime,detectBodyMime,checkEncodeURI } = require('../../common/http_utils');
+const { getReqMime,detectBodyMime } = require('../../common/http_utils');
 
 const url = require('url');
 const fs  = require('node:fs');
 const busboy = require('busboy');
+const path = require('path');
 
 /**
  * Save request headers into the database
  * @param {*} db 
- * @param {*} req 
- * @param {*} insertId 
+ * @param {http.ClientRequest} req 
+ * @param {int} insertId 
  */
 const log_request_headers = (db,req,insertId) =>{
     
@@ -70,46 +71,43 @@ const log_url_params = (db,params,request_id) => {
 };
 
 
-const log_request_body = (db,path,req,insert_id,callback)=> {
+const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
    
-    const update_request_detected_mime = (mime,path)=>{
+    const update_request_detected_mime = (mime,body_save_path)=>{
         const detectedMimeSql = `UPDATE requests SET response_mime_tetected=:mime,parsed_request_body_file=:path WHERE id = :id`
         const stmt = db.prepare(detectedMimeSql);
         stmt.run({
             'id':insert_id,
             'mime':mime,
-            'path':path
+            'path':body_save_path
         });
     }
 
-    const path_to_save = path.join(path,insert_id+"_body.raw");
-    const parsedPath = path.join(path,insert_id+"_body");
+    const path_to_save = path.join(save_path,insert_id+"_body.raw");
+    const parsedPath = path.join(save_path,insert_id+"_body");
 
-    var body = [];
     
-    req.on('data',(data)=> body.push(data));
+    if(!body){
+        return callback(null);
+    }
+        
+    fs.writeFileSync(path_to_save,body);
 
-    req.on('end',() => {
-        body = body.toString();
-        if(body){
-            fs.writeFileSync(path_to_save,body);
+    const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
+    const stmt = db.prepare(bodyPathSql);
+    stmt.run({
+        'id':insert_id,
+        "path":path_to_save
+    });
 
-            const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
-            const stmt = db.prepare(bodyPathSql);
-            stmt.run({
-                'id':insert_id,
-                "path":path_to_save
-            });
+    if(
+        (content_type === 'multipart/formdata' || content_type === 'application/x-www-form-urlencoded')
+    ){
 
-            if(
-                typeof req.headers['content-type']!== 'undefined' && 
-                (req.headers['content-type'] === 'multipart/formdata' || req.headers['content-type'] === 'application/x-www-form-urlencoded')
-            ){
+        update_request_detected_mime(req.headers['content-type'],null);
+        const bb = busboy({ headers: req.headers['content-type'] });
 
-                update_request_detected_mime(req.headers['content-type'],null);
-                const bb = busboy({ headers: req.headers['content-type'] });
-
-                const sql = `
+        const sql = `
                     INSERT INTO
                         request_http_params (request_id,name,value,value_in_file,param_location)
                     VALUES (
@@ -119,13 +117,13 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
                         :value_in_file,
                         'BODY'
                     )
-                `;
+        `;
 
-                const stmt = db.prepare(sql);
-                bb.on('file', (name, file, info) => {
+        const stmt = db.prepare(sql);
+        bb.on('file', (name, file, info) => {
                     const { filename } = info;
 
-                    const multipart_Uploads = path.join(path,insert_id,"multipart",filename);
+                    const multipart_Uploads = path.join(save_path,insert_id,"multipart",filename);
 
                     const fstream = fs.createWriteStream(multipart_Uploads);
                     file.pipe(fstream);
@@ -137,9 +135,9 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
                         'value_in_file':1
                        });
                     });
-                });
+        });
 
-                bb.on('field', (name, val, info) => {
+                bb.on('field', (name, val) => {
                     stmt.execute({
                         'id':insert_id,
                         'name':name,
@@ -169,13 +167,11 @@ const log_request_body = (db,path,req,insert_id,callback)=> {
                 update_request_detected_mime(mime,finalPath);
                 callback(null);
             });            
-        } else {
-            callback(null);
-        }
+      
    });
 }
 
-const request_log = (db,request_log_save_path,req,use_in_https,callback) => {
+const request_log_basics = (db,request_log_save_path,req,use_in_https,callback) => {
     const initialInsert = `
         INSERT INTO requests (
             method,
@@ -184,7 +180,7 @@ const request_log = (db,request_log_save_path,req,use_in_https,callback) => {
             path,
             path_without_params,
             request_mime,
-            request_timestamp_unix_nanosecond,
+            request_timestamp_unix_nanosecond
         ) VALUES (
             :method,
             :domain,
@@ -192,7 +188,7 @@ const request_log = (db,request_log_save_path,req,use_in_https,callback) => {
             :path,
             :path_without_params,
             :request_mime,
-            :insert_time,
+            :insert_time
         ) RETURNING id;
     `;
 
@@ -221,9 +217,13 @@ const request_log = (db,request_log_save_path,req,use_in_https,callback) => {
 
     log_url_params(db,queryData.query,insertId);
     log_request_headers(db,req,insertId);
-    log_request_body(db,request_log_save_path,insertId)
-    
     callback(null,insertId);  
+
+    log_request_body(db,request_log_save_path,insertId,()=>{
+    });
 }
 
-module.exports={request_log};
+module.exports = {
+    request_log_basics,
+    log_request_body
+};
