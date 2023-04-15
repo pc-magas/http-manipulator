@@ -71,43 +71,48 @@ const log_url_params = (db,params,request_id) => {
 };
 
 
-const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
+const log_request_body = (db,saved_path,req,insert_id,callback)=> {
    
-    const update_request_detected_mime = (mime,body_save_path)=>{
+    const update_request_detected_mime = (mime,saved_path)=>{
         const detectedMimeSql = `UPDATE requests SET response_mime_tetected=:mime,parsed_request_body_file=:path WHERE id = :id`
         const stmt = db.prepare(detectedMimeSql);
         stmt.run({
             'id':insert_id,
             'mime':mime,
-            'path':body_save_path
+            'path':saved_path
         });
     }
 
-    const path_to_save = path.join(save_path,insert_id+"_body.raw");
-    const parsedPath = path.join(save_path,insert_id+"_body");
+    const path_to_save = path.join(saved_path,insert_id+"_body.raw");
+    const parsedPath = path.join(saved_path,insert_id+"_body");
 
+    var body = [];
     
-    if(!body){
-        return callback(null);
-    }
-        
-    fs.writeFileSync(path_to_save,body);
+    req.on('data',(data)=> body.push(data));
 
-    const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
-    const stmt = db.prepare(bodyPathSql);
-    stmt.run({
-        'id':insert_id,
-        "path":path_to_save
-    });
+    req.on('end',() => {
+        body = body.toString();
+            if(!body){
+                return callback(null);
+            }
+            fs.writeFileSync(path_to_save,body);
 
-    if(
-        (content_type === 'multipart/formdata' || content_type === 'application/x-www-form-urlencoded')
-    ){
+            const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
+            const stmt = db.prepare(bodyPathSql);
+            stmt.run({
+                'id':insert_id,
+                "path":path_to_save
+            });
 
-        update_request_detected_mime(req.headers['content-type'],null);
-        const bb = busboy({ headers: req.headers['content-type'] });
+            if(
+                typeof req.headers['content-type']!== 'undefined' && 
+                (req.headers['content-type'] === 'multipart/formdata' || req.headers['content-type'] === 'application/x-www-form-urlencoded')
+            ){
 
-        const sql = `
+                update_request_detected_mime(req.headers['content-type'],null);
+                const bb = busboy({ headers: req.headers });
+
+                const sql = `
                     INSERT INTO
                         request_http_params (request_id,name,value,value_in_file,param_location)
                     VALUES (
@@ -117,13 +122,13 @@ const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
                         :value_in_file,
                         'BODY'
                     )
-        `;
+                `;
 
-        const stmt = db.prepare(sql);
-        bb.on('file', (name, file, info) => {
+                const stmt = db.prepare(sql);
+                bb.on('file', (name, file, info) => {
                     const { filename } = info;
 
-                    const multipart_Uploads = path.join(save_path,insert_id,"multipart",filename);
+                    const multipart_Uploads = path.join(path,insert_id,"multipart",filename);
 
                     const fstream = fs.createWriteStream(multipart_Uploads);
                     file.pipe(fstream);
@@ -135,9 +140,9 @@ const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
                         'value_in_file':1
                        });
                     });
-        });
+                });
 
-                bb.on('field', (name, val) => {
+                bb.on('field', (name, val, info) => {
                     stmt.execute({
                         'id':insert_id,
                         'name':name,
@@ -150,7 +155,7 @@ const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
                     callback(null);
                 });
 
-                req.pipe(req.busboy);
+                req.pipe(bb);
                 return;
             }
 
@@ -167,7 +172,7 @@ const log_request_body = (db,save_path,body,content_type,insert_id,callback)=> {
                 update_request_detected_mime(mime,finalPath);
                 callback(null);
             });            
-      
+        
    });
 }
 
@@ -198,32 +203,31 @@ const request_log_basics = (db,request_log_save_path,req,use_in_https,callback) 
     const queryData = url.parse(req.url, true);
 
     try {    
-        db.prepare("BEGIN DEFERRED TRASNACTION ");
+        db.prepare("BEGIN DEFERRED TRANSACTION");
 
         const insert_result = initialInsertStmt.run({
-                    "method":req.method,
-                    "domain":req.headers.host,
-                    "path": queryData.href,
-                    "path_without_params": queryData.pathname,
-                    "protocol":use_in_https?'https':'http',
-                    "request_mime":getReqMime(req)});
+                "method":req.method,
+                "domain":req.headers.host,
+                "path": queryData.href,
+                "path_without_params": queryData.pathname,
+                "protocol":use_in_https?'https':'http',
+                "request_mime":getReqMime(req),
+                "insert_time": Date.now()
+            });
             
         var insertId = insert_result.lastInsertRowid;
 
         db.prepare("COMMIT");
     } catch (e) {
         db.prepare("ROLLBACK");
+        return callback(e,null);  
     }
 
     log_url_params(db,queryData.query,insertId);
     log_request_headers(db,req,insertId);
-    callback(null,insertId);  
-
-    log_request_body(db,request_log_save_path,insertId,()=>{
+    log_request_body(db,request_log_save_path,req,insertId,()=>{
+        callback(null,insertId);  
     });
 }
 
-module.exports = {
-    request_log_basics,
-    log_request_body
-};
+module.exports = request_log_basics;

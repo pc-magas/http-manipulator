@@ -1,4 +1,4 @@
-const {parseResponseCookie} = require('../../../../src/common/http_utils.js');
+const {parseResponseCookie} = require('../../../src/common/http_utils.js');
 
 
 test('Parses Cookie correctly',()=>{
