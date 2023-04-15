@@ -18,6 +18,19 @@ test("detectsBase64EncodedImage",(done)=>{
     });
 });
 
+test("detectsBase64EncodedImagePng",(done)=>{
+    const imgdata = path.resolve(fileDataPath,"img.png.base64");
+    const content = fs.readFileSync(imgdata);
+    
+    detectBodyMime(content.toString(),(err,mime,extention)=>{
+        expect(mime).toBe('image/png');
+        expect(extention).toBe('png');
+        expect(err).toBe(null);
+
+        done();
+    });
+});
+
 test("detectsBase64EncodedJson",(done)=>{
     const content =  Buffer.from("{\"param\":1}", 'utf8');
     
