@@ -54,7 +54,7 @@ test("detectsXml",(done)=>{
     `;
 
     detectBodyMime(content,(err,mime,extention)=>{
-        expect(['application/xml','text/xml']).toContain('mime');
+        expect(['application/xml','text/xml']).toContain(mime);
         expect(extention).toBe('xml');
         expect(err).toBe(null);
 
@@ -75,7 +75,7 @@ test("detectsXmlBase64 encoded",(done)=>{
     const base64EncodedXml = Buffer.from(content).toString('base64');
 
     detectBodyMime(base64EncodedXml,(err,mime,extention)=>{
-        expect(['application/xml','text/xml']).toContain('mime');
+        expect(['application/xml','text/xml']).toContain(mime);
         expect(extention).toBe('xml');
         expect(err).toBe(null);
 
