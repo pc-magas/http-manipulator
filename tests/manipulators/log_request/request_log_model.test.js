@@ -75,6 +75,30 @@ test("Log Http Post Form Data", (done)=>{
             } catch(e) {
               return done(e);
             }
+
+            try {
+                let result = db.prepare(`SELECT * from request_http_params where request_id = :id and param_location='BODY' `).all({"id":insert_id});
+                expect(parseInt(result.length)).toEqual(2);
+
+                result.forEach((value)=>{
+                    expect(['username','password']).toContain(value.name);
+                    switch(value.name){
+                        case 'username':
+                            expect(value.value).toBe('techbos');
+                            break;
+                        case 'password':
+                            expect(value.value).toBe('Pa$$w0rd');
+                            break;
+                        default:
+                            done(new Error("no defined values"));
+                    }
+
+                    expect(value.value_in_file).toBe(0);
+                });
+
+            } catch(e) {
+              return done(e);
+            }
         });
 
         next();
