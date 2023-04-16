@@ -3,7 +3,7 @@ const {no_301_302_http_methods} = require('../constants.js');
 const mmm = require('mmmagic');
 const mime = require('mime-types');
 const {Buffer} = require("node:buffer");
-
+const querystring = require("node:querystring");
 
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;
@@ -168,6 +168,17 @@ const detectBodyMime = (body,callback) => {
                 return callback(null,'application/json','json',buffer);
             }catch(e){
                 // Do nothing keep it silence we need to just verify that content is Json
+            }
+
+            // Check if Url Encoded data
+            try{
+                const parsedData = querystring.parse(buffer.toString());
+
+                if(parsedData){
+                    return callback(null,'application/x-www-form-urlencoded',null,buffer);
+                }
+            } catch(e){
+                // Do nothing keep it silence we need to just verify that content is urlEncoded data
             }
         }
         
