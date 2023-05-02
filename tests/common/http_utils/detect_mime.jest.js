@@ -104,7 +104,7 @@ test("form url encoded",(done)=>{
         expect('application/x-www-form-urlencoded').toEqual(mime);
         expect(extention).toBe(null);
         expect(err).toBe(null);
-        
+
         done();
     });
 });
@@ -123,7 +123,7 @@ test("form url encoded multiple",(done)=>{
 });
 
 
-test("reandom text to be text",(done)=>{
+test("random text to be text",(done)=>{
     const content = `dawdwqeewqwqeewqwqewqeqw&me=plz&*3032-vcsjmvar[]=true&var[2]=false&var['blahblah']=ipsum`;
 
 
