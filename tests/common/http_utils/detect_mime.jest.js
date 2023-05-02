@@ -96,3 +96,42 @@ test("detectsXmlBase64 encoded",(done)=>{
     });
 })
 
+
+test("form url encoded",(done)=>{
+    const content = `val=21221`;
+
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect('application/x-www-form-urlencoded').toEqual(mime);
+        expect(extention).toBe(null);
+        expect(err).toBe(null);
+        
+        done();
+    });
+});
+
+test("form url encoded multiple",(done)=>{
+    const content = `pleas=help&me=plz&var[]=true&var[2]=false&var['blahblah']=ipsum`;
+
+
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect('application/x-www-form-urlencoded').toEqual(mime);
+        expect(extention).toBe(null);
+        expect(err).toBe(null);
+
+        done();
+    });
+});
+
+
+test("reandom text to be text",(done)=>{
+    const content = `dawdwqeewqwqeewqwqewqeqw&me=plz&*3032-vcsjmvar[]=true&var[2]=false&var['blahblah']=ipsum`;
+
+
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect('text/plain').toEqual(mime);
+        expect(extention).toBe('txt');
+        expect(err).toBe(null);
+
+        done();
+    });
+});

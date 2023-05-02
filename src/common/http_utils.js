@@ -138,11 +138,21 @@ const parseResponseCookie = (cookie) => {
     });
 }
 
-const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
 const isBase64 = (str) => {
+    const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
     const cleanedStr = str.replace(/[\n\r\s]+/g, '');
     return base64RegExp.test(cleanedStr);
 };
+
+/**
+ * Check if valis url encoded.
+ * For now I set the value as true
+ * @param {String} body 
+ * @returns Boolean
+ */
+const isValidFormUrlEncoded = (body) => {
+    return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])?=[\w%]*(?:&|$))*$/.test(body);
+}
 
 /**
  * Detects mime type and file extention from request body
@@ -166,20 +176,15 @@ const detectBodyMime = (body,callback) => {
                 }
                 JSON.parse(text);
                 return callback(null,'application/json','json',buffer);
-            }catch(e){
-                // Do nothing keep it silence we need to just verify that content is Json
+            }catch(e){                
+                // Do nothing keep it silent we need to just verify that content is Json
+            }
+            
+            if(isValidFormUrlEncoded(buffer)){
+                return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
 
-            // Check if Url Encoded data
-            try{
-                const parsedData = querystring.parse(buffer.toString());
-
-                if(parsedData){
-                    return callback(null,'application/x-www-form-urlencoded',null,buffer);
-                }
-            } catch(e){
-                // Do nothing keep it silence we need to just verify that content is urlEncoded data
-            }
+            
         }
         
         return callback(null,result,mime.extension(result),buffer);
