@@ -1,9 +1,5 @@
 const connect = require('connect');
-const fs = require('fs');
-
-const { detectBodyMime } = require('../src/common/http_utils');
-
-
+const {detectBodyMime} = require('../src/common/http_utils');
 const app = connect();
 
 app.use(function(req,res,next){
@@ -18,19 +14,17 @@ app.use(function(req,res,next){
     });
 
     req.on('end',() => {
+
+        console.log(req.headers);
         body = Buffer.concat(body).toString();
-        console.log(req.headers['content-type']);
-        if(body){
-            detectBodyMime(body,(err,mime,extention,buffer)=>{
-                    if (err) {return;}
-                    console.log(mime,extention);
-                    // console.log(buffer.toString());
-            }); 
-        }
         
-      
+        detectBodyMime(body,(err,mime,extention,content)=>{
+            console.log(content.toString());
+            console.log(mime);
+        });
+
+        next();
     });
-    next();
 });
 
 app.use(function(req,res){
