@@ -123,11 +123,38 @@ test("form url encoded multiple",(done)=>{
 });
 
 
-test("random text to be text",(done)=>{
+test("wrong formurl encoded data to be  detected ad text/plain",(done)=>{
     const content = `dawdwqeewqwqeewqwqewqeqw&me=plz&*3032-vcsjmvar[]=true&var[2]=false&var['blahblah']=ipsum`;
 
 
     detectBodyMime(content,(err,mime,extention)=>{
+        expect('text/plain').toEqual(mime);
+        expect(extention).toBe('txt');
+        expect(err).toBe(null);
+
+        done();
+    });
+});
+
+
+test("random text to be detected ad text/plain",(done)=>{
+    const content = `bxuiqwbuwqpniqbnxiqwpxbipwqxbiwqpxbqwipbqip`;
+
+
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect('text/plain').toEqual(mime);
+        expect(extention).toBe('txt');
+        expect(err).toBe(null);
+
+        done();
+    });
+});
+
+test("base64 text to be detected ad text/plain",(done)=>{
+    const content = `bxuiqwbuwqpniqbnxiqwpxbipwqxbiwqpxbqwipbqip`;
+    const contentBase64 = Buffer.from(content).toString('base64');
+
+    detectBodyMime(contentBase64,(err,mime,extention)=>{
         expect('text/plain').toEqual(mime);
         expect(extention).toBe('txt');
         expect(err).toBe(null);
