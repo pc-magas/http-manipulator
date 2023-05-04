@@ -104,8 +104,9 @@ test("Log Http Post Form Data", (done)=>{
         next();
     });
 
-    app.use((req,res,next)=>{
+    app.use((req,res)=>{
         res.end("Hello");
+        done();
     })
 
     request(app)
@@ -114,5 +115,5 @@ test("Log Http Post Form Data", (done)=>{
         .set('X-MyHeader',3)
         .set("Cookie",  ['c_param1=12345667', 'c_param2=blah'])
         .send("username=techbos&password=Pa%24%24w0rd")
-        .then(()=>{done()});
+        .then(()=>{});
 });

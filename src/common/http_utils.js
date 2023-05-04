@@ -3,7 +3,6 @@ const {no_301_302_http_methods} = require('../constants.js');
 const mmm = require('mmmagic');
 const mime = require('mime-types');
 const {Buffer} = require("node:buffer");
-const querystring = require("node:querystring");
 
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;
@@ -138,6 +137,11 @@ const parseResponseCookie = (cookie) => {
     });
 }
 
+/**
+ * Check whether str is base64 encoded or not
+ * @param {String} str 
+ * @returns {Boolean} 
+ */
 const isBase64 = (str) => {
     const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
     const cleanedStr = str.replace(/[\n\r\s]+/g, '');
@@ -148,7 +152,7 @@ const isBase64 = (str) => {
  * Check if valis url encoded.
  * For now I set the value as true
  * @param {String} body 
- * @returns Boolean
+ * @returns {Boolean}
  */
 const isValidFormUrlEncoded = (body) => {
     return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])?=[\w%]*(?:&|$))*$/.test(body);
@@ -183,8 +187,6 @@ const detectBodyMime = (body,callback) => {
             if(isValidFormUrlEncoded(buffer)){
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
-
-            
         }
         
         return callback(null,result,mime.extension(result),buffer);

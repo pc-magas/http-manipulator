@@ -1,5 +1,9 @@
 const connect = require('connect');
 const {detectBodyMime} = require('../src/common/http_utils');
+
+const querystring = require("node:querystring");
+
+
 const app = connect();
 
 app.use(function(req,res,next){
@@ -19,6 +23,14 @@ app.use(function(req,res,next){
         body = Buffer.concat(body).toString();
         
         detectBodyMime(body,(err,mime,extention,content)=>{
+            if(mime == 'application/x-www-form-urlencoded'){
+                const parsedData = { ...querystring.parse(content.toString()) };
+                Object.keys(parsedData).forEach((key)=>{
+                   const value = parsedData[key];
+                   console.log("DUMP",key,value);
+                });
+            }
+
             console.log(content.toString());
             console.log(mime);
         });

@@ -50,8 +50,13 @@ function createTables(db){
                 name TEXT,
                 value TEXT,
                 value_in_file INTEGER not null CHECK(value_in_file IN (0,1)) DEFAULT 0,
+                value_is_array INTEGER not null CHECK(value_is_array IN (0,1)) DEFAULT 0,
+                value_index INTEGER,
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
+
+            CREATE INDEX idx_request_http_params ON request_http_params (name);
+            CREATE INDEX idx_request_http_params_array ON request_http_params (id,request_id,param_location,name,value_is_array,value_index);
 
             CREATE TABLE IF NOT EXISTS http_cookies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,8 +72,6 @@ function createTables(db){
                 
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );
-
-
 
             CREATE table IF NOT EXISTS redirect (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
