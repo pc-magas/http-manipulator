@@ -96,6 +96,7 @@ const log_body_form_urlencoded = (db, buffer, insert_id) => {
 
     const stmt = db.prepare(sql);
     const parsedData = { ...querystring.parse(buffer.toString()) };
+    
     Object.keys(parsedData).forEach((key) => {
         const value = parsedData[key];
         if (Array.isArray(value)) {

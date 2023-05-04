@@ -361,6 +361,7 @@ test("Log Http Post Log XML", (done)=>{
         .then(()=>{});
 });
 
+
 test("Log Http PUT Log XML", (done)=>{
 
     const db = createDb(':memory:');
@@ -818,7 +819,6 @@ test("Log Http PUT Log JSON", (done)=>{
         .send(content)
         .then(()=>{});
 });
-
 
 test("Log Http PATCH Log JSON", (done)=>{
 
