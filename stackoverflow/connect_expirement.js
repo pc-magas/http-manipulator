@@ -1,16 +1,18 @@
 const connect = require('connect');
-const {detectBodyMime} = require('../src/common/http_utils');
-
-const querystring = require("node:querystring");
-
+// const {detectBodyMime} = require('../src/common/http_utils');
+const fs = require('fs');
 
 const app = connect();
+
+const detectMultipart = (string)=>{
+    return string.indexOf('Content-Disposition: form-data; name="')>1;
+};
 
 app.use(function(req,res,next){
     req.id = 1;
 
     var body = [];
-    
+
     req.on('data',(data) =>
     {
         console.log('Getting Body');
@@ -21,19 +23,11 @@ app.use(function(req,res,next){
 
         console.log(req.headers);
         body = Buffer.concat(body).toString();
+        fs.writeFileSync('./'+Date.now(),body);
         
-        detectBodyMime(body,(err,mime,extention,content)=>{
-            if(mime == 'application/x-www-form-urlencoded'){
-                const parsedData = { ...querystring.parse(content.toString()) };
-                Object.keys(parsedData).forEach((key)=>{
-                   const value = parsedData[key];
-                   console.log("DUMP",key,value);
-                });
-            }
-
-            console.log(content.toString());
-            console.log(mime);
-        });
+        console.log("\n###########\n\n");
+        console.log(detectMultipart(body));
+        console.log("\n\n###########\n\n");
 
         next();
     });

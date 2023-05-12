@@ -187,6 +187,8 @@ const detectBodyMime = (body,callback) => {
             if(isValidFormUrlEncoded(buffer)){
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
+
+            
         }
         
         return callback(null,result,mime.extension(result),buffer);

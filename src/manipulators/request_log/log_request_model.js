@@ -156,7 +156,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             "path": path_to_save
         });
 
-        if (req.headers['content-type'] === 'multipart/formdata') {
+        if (req.headers['content-type'].includes('multipart/form-data')) {
 
             update_request_detected_mime(req.headers['content-type'], null);
             const bb = busboy({ headers: req.headers });
@@ -199,6 +199,8 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                     'value_in_file': 0
                 });
             });
+
+            // bb.on('error',(e)=>callback(e));
 
             bb.on('finish', () => {
                 callback(null);
