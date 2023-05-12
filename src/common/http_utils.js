@@ -2,7 +2,10 @@ const {no_301_302_http_methods} = require('../constants.js');
 
 const mmm = require('mmmagic');
 const mime = require('mime-types');
+const yaml = require('js-yaml');
+
 const {Buffer} = require("node:buffer");
+
 
 const getProtocol = (req) => {
     if(req.protocol) return req.protocol;
@@ -155,7 +158,7 @@ const isBase64 = (str) => {
  * @returns {Boolean}
  */
 const isValidFormUrlEncoded = (body) => {
-    return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])?=[\w%]*(?:&|$))*$/.test(body);
+    return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])*=[\w\-\+\.%]*(?:&|$))+$/.test(body);
 }
 
 /**
@@ -173,22 +176,33 @@ const detectBodyMime = (body,callback) => {
         if (err) {  return callback(err); }
 
         if(result == 'text/plain') {
-            try {
-                let text = buffer.toString();
-                if (text.codePointAt(0) === 0xFEFF) { // UTF8 BOM
-                    text = text.substring(1);
-                }
+            let text = buffer.toString();
+            if (text.codePointAt(0) === 0xFEFF) { // UTF8 BOM
+                text = text.substring(1);
+            }
+            
+            try {   
                 JSON.parse(text);
                 return callback(null,'application/json','json',buffer);
             }catch(e){                
                 // Do nothing keep it silent we need to just verify that content is Json
             }
-            
-            if(isValidFormUrlEncoded(buffer)){
+
+            if(isValidFormUrlEncoded(text)){
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
 
-            
+
+            if(text.indexOf('Content-Disposition: form-data; name="')>1){
+                return callback(null,'multipart/form-data',null,buffer);
+            }
+
+            try {
+                yaml.load(text);
+                return callback(null,'text/yaml','yml',buffer);
+            } catch (e) {
+                //
+            }
         }
         
         return callback(null,result,mime.extension(result),buffer);

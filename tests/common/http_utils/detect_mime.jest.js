@@ -122,6 +122,18 @@ test("form url encoded multiple",(done)=>{
     });
 });
 
+test("form url encoded multiple array",()=>{
+
+    const content=`pleas=ContentDisposition%3A%20formdata%3B%20name%3D%22myfile%22%3B%20filename%3D%22exclude.txt%22&me=plz&var[]=true&var[2]=false&var['blahblah']=ipsum`
+    
+    detectBodyMime(content,(err,mime,extention)=>{
+        expect('application/x-www-form-urlencoded').toEqual(mime);
+        expect(extention).toBe(null);
+        expect(err).toBe(null);
+
+        done();
+    });
+})
 
 test("wrong formurl encoded data to be  detected ad text/plain",(done)=>{
     const content = `dawdwqeewqwqeewqwqewqeqw&me=plz&*3032-vcsjmvar[]=true&var[2]=false&var['blahblah']=ipsum`;
