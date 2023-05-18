@@ -146,6 +146,7 @@ const parseResponseCookie = (cookie) => {
  * @returns {Boolean} 
  */
 const isBase64 = (str) => {
+    console.log(str);
     const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
     const cleanedStr = str.replace(/[\n\r\s]+/g, '');
     return base64RegExp.test(cleanedStr);
@@ -160,6 +161,11 @@ const isBase64 = (str) => {
 const isValidFormUrlEncoded = (body) => {
     return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])*=[\w\-\+\.%]*(?:&|$))+$/.test(body);
 }
+
+const isValidMultipart = (body) => {
+    const pattern = /[\-\w]+\r\nContent-Disposition:\sform-data;\sname=.*\r\n/;
+    return pattern.test(body);
+};
 
 /**
  * Detects mime type and file extention from request body
@@ -192,17 +198,16 @@ const detectBodyMime = (body,callback) => {
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
 
-
-            if(text.indexOf('Content-Disposition: form-data; name="')>1){
+            if(isValidMultipart(text)){
                 return callback(null,'multipart/form-data',null,buffer);
             }
-
+            
             try {
                 yaml.load(text);
                 return callback(null,'text/yaml','yml',buffer);
             } catch (e) {
                 //
-            }
+            }  
         }
         
         return callback(null,result,mime.extension(result),buffer);

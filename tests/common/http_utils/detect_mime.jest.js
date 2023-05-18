@@ -174,3 +174,29 @@ test("base64 text to be detected ad text/plain",(done)=>{
         done();
     });
 });
+
+test("detect multipart",(done)=>{
+    const httpBodyFile = path.resolve(fileDataPath,"bodyWithFileUpload");
+    const content = fs.readFileSync(httpBodyFile);
+
+    detectBodyMime(content.toString(),(err,mime,extention)=>{
+        expect(mime).toEqual('multipart/form-data');
+        expect(extention).toBe(null);
+        expect(err).toBe(null);
+
+        done();
+    });
+});
+
+test("detect multipart without file upload",(done)=>{
+    const httpBodyFile = path.resolve(fileDataPath,"bodyWithoutFileUpload");
+    const content = fs.readFileSync(httpBodyFile);
+
+    detectBodyMime(content.toString(),(err,mime,extention)=>{
+        expect(mime).toEqual('multipart/form-data');
+        expect(extention).toBe(null);
+        expect(err).toBe(null);
+
+        done();
+    });
+});
