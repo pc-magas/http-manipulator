@@ -157,6 +157,8 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             "path": path_to_save
         });
 
+        // I ignore content-type because I do not trust the header. 
+        // Content-Type header can be anything that body indicates and I want to cover this edge case.
         return detectBodyMime(body, (err, mime, extention, buffer) => {
             if (err) { return; }
 
