@@ -171,6 +171,8 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             s.push(buffer)
             s.push(null)
             const finalPath = parsedPath + '.' + extention
+
+            // Content can be base64 I want to capture in seperate file both base64 and non-base64 http body.
             s.pipe(fs.createWriteStream(finalPath));
 
             if(mime == 'multipart/form-data'){
