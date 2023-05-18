@@ -123,6 +123,7 @@ const log_body_form_urlencoded = (db, buffer, insert_id) => {
     });
 };
 
+
 const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
     const update_request_detected_mime = (mime, saved_path) => {
@@ -156,60 +157,6 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             "path": path_to_save
         });
 
-        if (req.headers['content-type'].includes('multipart/form-data')) {
-
-            update_request_detected_mime(req.headers['content-type'], null);
-            const bb = busboy({ headers: req.headers });
-
-            const sql = `
-                    INSERT INTO
-                        request_http_params (request_id,name,value,value_in_file,param_location)
-                    VALUES (
-                        :id,
-                        :name,
-                        :value,
-                        :value_in_file,
-                        'BODY'
-                    )
-                `;
-
-            const stmt = db.prepare(sql);
-            bb.on('file', (name, file, info) => {
-                const { filename } = info;
-
-                const multipart_Uploads = path.join(path, insert_id, "multipart", filename);
-
-                const fstream = fs.createWriteStream(multipart_Uploads);
-                file.pipe(fstream);
-                fstream.on('close', function () {
-                    stmt.execute({
-                        'id': insert_id,
-                        'name': name,
-                        'value': multipart_Uploads,
-                        'value_in_file': 1
-                    });
-                });
-            });
-
-            bb.on('field', (name, val, info) => {
-                stmt.execute({
-                    'id': insert_id,
-                    'name': name,
-                    'value': val,
-                    'value_in_file': 0
-                });
-            });
-
-            // bb.on('error',(e)=>callback(e));
-
-            bb.on('finish', () => {
-                callback(null);
-            });
-
-            req.pipe(bb);
-            return;
-        }
-
         return detectBodyMime(body, (err, mime, extention, buffer) => {
             if (err) { return; }
 
@@ -224,8 +171,23 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             const finalPath = parsedPath + '.' + extention
             s.pipe(fs.createWriteStream(finalPath));
 
-            update_request_detected_mime(mime, finalPath);
-            callback(null);
+            if(mime == 'multipart/form-data'){
+
+                const formData = new busboy({ headers: { 'content-type': 'multipart/form-data' } });
+
+                formData.on('close', () => {
+                    
+                });
+
+                formData.on('error', (error) => {
+                    // Decide what to do
+                });
+
+                s.pipe(formData);
+            } else {
+                update_request_detected_mime(mime, finalPath);
+                callback(null);
+            }
         });
 
     });
