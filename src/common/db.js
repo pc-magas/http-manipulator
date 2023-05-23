@@ -51,6 +51,7 @@ function createTables(db){
                 value TEXT,
                 value_in_file INTEGER not null CHECK(value_in_file IN (0,1)) DEFAULT 0,
                 value_is_array INTEGER not null CHECK(value_is_array IN (0,1)) DEFAULT 0,
+                saved_sucessfully INTEGER CHECK( (value_in_file == 0 and saved_sucessfully == null) or (value_in_file == 1 and saved_sucessfully IN (0,1)),
                 value_index INTEGER,
                 FOREIGN KEY(request_id) REFERENCES requests(id)
             );

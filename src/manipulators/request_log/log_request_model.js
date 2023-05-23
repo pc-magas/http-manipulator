@@ -5,8 +5,8 @@ const fs = require('node:fs');
 const busboy = require('busboy');
 const path = require('path');
 
+const {Readable,PassThrough}= require('stream');
 const querystring = require("node:querystring");
-
 
 /**
  * Save request headers into the database
@@ -123,7 +123,6 @@ const log_body_form_urlencoded = (db, buffer, insert_id) => {
     });
 };
 
-
 const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
     const update_request_detected_mime = (mime, saved_path) => {
@@ -136,7 +135,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
         });
     }
 
-    const path_to_save = path.join(saved_path, insert_id + "_body.raw");
+    const unparsedBody = path.join(saved_path, insert_id + "_body.raw");
     const parsedPath = path.join(saved_path, insert_id + "_body");
 
     var body = [];
@@ -148,13 +147,13 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
         if (!body) {
             return callback(null);
         }
-        fs.writeFileSync(path_to_save, body);
+        fs.writeFileSync(unparsedBody, body);
 
         const bodyPathSql = `UPDATE requests SET raw_request_body_file=:path WHERE id = :id`
         const stmt = db.prepare(bodyPathSql);
         stmt.run({
             'id': insert_id,
-            "path": path_to_save
+            "path": unparsedBody
         });
 
         // I ignore content-type because I do not trust the header. 
@@ -166,25 +165,91 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                 log_body_form_urlencoded(db,buffer,insert_id);
             }
 
-            var Readable = require('stream').Readable;
             const s = new Readable()
+            const filePassthrough = new PassThrough();
+            const busboyPassthrough = new PassThrough();
+            s.pipe(filePassthrough);
+            s.pipe(busboyPassthrough);
+
             s.push(buffer)
             s.push(null)
-            const finalPath = parsedPath + '.' + extention
 
             // Content can be base64 I want to capture in seperate file both base64 and non-base64 http body.
-            s.pipe(fs.createWriteStream(finalPath));
+            const finalPath = parsedPath + '.' + extention
+            filePassthrough.pipe(fs.createWriteStream(finalPath));
 
             if(mime == 'multipart/form-data'){
 
-                const formData = new busboy({ headers: { 'content-type': 'multipart/form-data' } });
+                const detectedHeader = "multipart/form-data; boundary="+buffer.toString().substring(2,70).split('\r\n')[0]
+                const formData = new busboy({ headers: { 'content-type': detectedHeader } });
+
+                // For performance reasons I avoid making a function because I wanna re-use the same statement.
+                const multipartInsertSql = `
+                    INSERT INTO 
+                    request_http_params (
+                        request_id,
+                        name,
+                        value,
+                        value_is_array,
+                        value_index,
+                        param_location,
+                        saved_sucessfully
+                    )
+                    VALUES (
+                        :id,
+                        :name,
+                        :value,
+                        :value_is_array,
+                        :value_is_file,
+                        :value_index,
+                        :saved_sucessfully,
+                        'BODY'
+                    );
+                `;
+
+                const stmt = db.prepare(multipartInsertSql);
+
+                formData.on('field', (name, value, info) => {
+                    stmt.run({
+                        'id': insert_id,
+                        'name':name,
+                        'value':value,
+                        'value_is_array':0, //@todo perform checks if value is [] terminated
+                        'value_index': null,
+                        'value_is_file': 0,
+                        'saved_sucessfully': null
+                    });
+                });
+
+                formData.on('file', (name, value, info) => {
+                    const fileContainingValue = path.join(saved_path,'/',insert_id,'/multipart/',info.filename);
+                    
+                    fs.writeFile(fileContainingValue,function(err){
+                        let success = (err)?0:1;
+
+                        stmt.run({
+                            'id': insert_id,
+                            'name':name,
+                            'value':fileContainingValue,
+                            'value_is_array':0, //@todo perform checks if value is [] terminated
+                            'value_index': null,
+                            'value_is_file': 1,
+                            'saved_sucessfully':success
+                        });
+                    })
+
+                });
 
                 formData.on('close', () => {
-                    
+                    update_request_detected_mime(mime, finalPath);
+                    callback(null);
                 });
 
                 formData.on('error', (error) => {
-                    // Decide what to do
+                    // Opps in the end was not multipart
+                    update_request_detected_mime('text/plain', finalPath);
+                    callback(null);
+    
                 });
 
                 s.pipe(formData);
