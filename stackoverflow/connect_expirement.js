@@ -5,7 +5,6 @@ const {Buffer} = require("node:buffer");
 const app = connect();
 
 app.use(function(req,res,next){
-    req.id = 1;
 
     var body = [];
 

@@ -209,7 +209,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
                 const stmt = db.prepare(multipartInsertSql);
 
-                formData.on('field', (name, value, info) => {
+                formData.on('field', (name, value) => {
                     stmt.run({
                         'id': insert_id,
                         'name':name,
