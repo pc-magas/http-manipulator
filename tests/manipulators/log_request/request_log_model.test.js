@@ -207,7 +207,6 @@ test("Log Http Post Form Data Array", (done)=>{
                             case 'val[]':
                             expect(value.value_is_array).toBe(1);
                             expect([1,0]).toContain(parseInt(value.value));
-                            console.log(value.value_index);
                             expect([0,1]).toContain(parseInt(value.value_index));
 
                             if(value.value_index == 0){
@@ -334,7 +333,6 @@ test("Log Http POST Multipart With File Data",(done)=>{
                             expect(value.value_in_file).toBe(0);
                             expect(value.value_is_array).toBe(1);
                             expect([1,0]).toContain(parseInt(value.value));
-                            console.log(value.value_index);
                             expect([0,1]).toContain(parseInt(value.value_index));
 
                             if(value.value_index == 0){
@@ -377,6 +375,10 @@ test("Log Http POST Multipart With File Data",(done)=>{
         done();
     })
 
+    const fs = require('fs');
+    const file =path.join(__dirname,'__testdata__','test.png');
+    var data = fs.readFileSync(file);
+
     request(app)
         .post('/example?param1=11&param2=22')
         .set('Host','example.com')
@@ -387,7 +389,7 @@ test("Log Http POST Multipart With File Data",(done)=>{
         .field("password","Pa$$w0rd")
         .field("val[]",1)
         .field("val[]",0)
-        .attach('test','./testdata/test.png')
+        .attach('test',data,'test.png')
         .then(()=>{});
 });
 
@@ -476,7 +478,6 @@ test("Log Http POST Multipart Without File Data",(done)=>{
                             case 'val[]':
                             expect(value.value_is_array).toBe(1);
                             expect([1,0]).toContain(parseInt(value.value));
-                            console.log(value.value_index);
                             expect([0,1]).toContain(parseInt(value.value_index));
 
                             if(value.value_index == 0){

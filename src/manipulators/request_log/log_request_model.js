@@ -144,7 +144,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
     req.on('end', () => {
         body = body.toString();
-        if (!body) {
+        if (!body || body.length === 0) {
             return callback(null);
         }
         fs.writeFileSync(unparsedBody, body);
@@ -224,7 +224,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                 formData.on('file', (name, value, info) => {
                     const fileContainingValue = path.join(saved_path,'/',insert_id,'/multipart/',info.filename);
                     
-                    fs.writeFile(fileContainingValue,function(err){
+                    fs.writeFile(fileContainingValue,value,function(err){
                         let success = (err)?0:1;
 
                         stmt.run({
