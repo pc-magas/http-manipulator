@@ -146,7 +146,6 @@ const parseResponseCookie = (cookie) => {
  * @returns {Boolean} 
  */
 const isBase64 = (str) => {
-    console.log(str);
     const base64RegExp = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
     const cleanedStr = str.replace(/[\n\r\s]+/g, '');
     return base64RegExp.test(cleanedStr);
