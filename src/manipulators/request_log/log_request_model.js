@@ -125,7 +125,7 @@ const log_body_form_urlencoded = (db, buffer, insert_id) => {
 
 const mkPaths = (saved_path,insert_id)=>{
 
-    const requestBasePath = path.join(saved_path,insert_id);
+    const requestBasePath = path.join(saved_path,""+insert_id);
     const multipartSavePath = path.join(requestBasePath,'multipart');
     const unparsedBodyPath = path.join(requestBasePath,'body.raw');
     const parsedBodyPath = path.join(requestBasePath,'body.raw');
@@ -239,10 +239,23 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                 formData.on('file', (name, value, info) => {
 
                     const fileContainingValue = path.join(paths.multipartSavePath,info.filename);
-                    
-                    fs.writeFile(fileContainingValue,value,function(err){
-                        let success = (err)?0:1;
+                    const saveStream = fs.createWriteStream(fileContainingValue);
+                    saveStream.pipe(value);
 
+                    saveStream.on('close',()=>{
+
+                            stmt.run({
+                                'id': insert_id,
+                                'name':name,
+                                'value':fileContainingValue,
+                                'value_is_array':0, //@todo perform checks if value is [] terminated?
+                                'value_index': null,
+                                'value_is_file': 1,
+                                'saved_sucessfully':1
+                            });
+                    });
+
+                    saveStream.on('error',()=>{
                         stmt.run({
                             'id': insert_id,
                             'name':name,
@@ -250,9 +263,9 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                             'value_is_array':0, //@todo perform checks if value is [] terminated?
                             'value_index': null,
                             'value_is_file': 1,
-                            'saved_sucessfully':success
+                            'saved_sucessfully':0
                         });
-                })
+                    });
 
                 });
 
