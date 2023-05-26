@@ -7,3 +7,6 @@ src/so.js
 !config/cert.conf
 
 stackoverflow/bodies
+stackoverflow/*.sqlite
+stackoverflow/*.sqlite-shm
+stackoverflow/*.sqlite-wal

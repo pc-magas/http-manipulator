@@ -181,16 +181,16 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
             if(mime == 'multipart/form-data'){
 
                 const detectedHeader = "multipart/form-data; boundary="+buffer.toString().substring(2,70).split('\r\n')[0]
-                const formData = new busboy({ headers: { 'content-type': detectedHeader } });
+                const formData = busboy({ headers: { 'content-type': detectedHeader } });
 
                 // For performance reasons I avoid making a function because I wanna re-use the same statement.
                 const multipartInsertSql = `
-                    INSERT INTO 
-                    request_http_params (
+                    INSERT INTO request_http_params (
                         request_id,
                         name,
                         value,
                         value_is_array,
+                        value_in_file,
                         value_index,
                         param_location,
                         saved_sucessfully
@@ -202,8 +202,8 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                         :value_is_array,
                         :value_is_file,
                         :value_index,
-                        :saved_sucessfully,
-                        'BODY'
+                        'BODY',
+                        :saved_sucessfully
                     );
                 `;
 
@@ -214,7 +214,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                         'id': insert_id,
                         'name':name,
                         'value':value,
-                        'value_is_array':0, //@todo perform checks if value is [] terminated
+                        'value_is_array':0, //@todo perform checks if value is [] terminated?
                         'value_index': null,
                         'value_is_file': 0,
                         'saved_sucessfully': null
@@ -231,12 +231,12 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                             'id': insert_id,
                             'name':name,
                             'value':fileContainingValue,
-                            'value_is_array':0, //@todo perform checks if value is [] terminated
+                            'value_is_array':0, //@todo perform checks if value is [] terminated?
                             'value_index': null,
                             'value_is_file': 1,
                             'saved_sucessfully':success
                         });
-                    })
+                })
 
                 });
 

@@ -197,9 +197,7 @@ const detectBodyMime = (body,callback) => {
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
             }
 
-            if(isValidMultipart(text)){
-                return callback(null,'multipart/form-data',null,buffer);
-            }
+           
             
             try {
                 yaml.load(text);
@@ -207,6 +205,12 @@ const detectBodyMime = (body,callback) => {
             } catch (e) {
                 //
             }  
+        } else if(result=='application/octet-stream'){
+            let text = buffer.toString();
+
+            if(isValidMultipart(text)){
+                return callback(null,'multipart/form-data',null,buffer);
+            }
         }
         
         return callback(null,result,mime.extension(result),buffer);
