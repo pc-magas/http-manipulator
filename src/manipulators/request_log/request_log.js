@@ -19,7 +19,7 @@ module.exports.log_request_and_response = (serviceLocator,use_in_https) => {
 
     app.use(function(req,res,next){
                 
-        request_log(db,req,use_in_https,(err,insert_id)=>{
+        request_log(db,savePath,req,use_in_https,(err,insert_id)=>{
             if(err){
                return next(err);
             }
@@ -63,12 +63,6 @@ module.exports.log_request_and_response = (serviceLocator,use_in_https) => {
         next();
     });
 
-    app.use((req,res,next)=>{
-        log_request_body(db,savePath,req,(err)=>{
-            if(err) { return next(err)}
-            next();
-        })
-    })
 
     app.use((req,res,next) => {
         

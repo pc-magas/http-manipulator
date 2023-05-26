@@ -123,6 +123,18 @@ const log_body_form_urlencoded = (db, buffer, insert_id) => {
     });
 };
 
+const mkPaths = (saved_path,insert_id)=>{
+
+    const requestBasePath = path.join(saved_path,insert_id);
+    const multipartSavePath = path.join(requestBasePath,'multipart');
+    const unparsedBodyPath = path.join(requestBasePath,'body.raw');
+    const parsedBodyPath = path.join(requestBasePath,'body.raw');
+
+    !fs.existsSync(multipartSavePath) && fs.mkdirSync(multipartSavePath,{recursive: true});
+
+    return {requestBasePath,multipartSavePath,unparsedBodyPath,parsedBodyPath};
+}
+
 const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
     const update_request_detected_mime = (mime, saved_path) => {
@@ -135,8 +147,11 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
         });
     }
 
-    const unparsedBody = path.join(saved_path, insert_id + "_body.raw");
-    const parsedPath = path.join(saved_path, insert_id + "_body");
+    const paths = mkPaths(saved_path,insert_id);
+
+    
+    const unparsedBody = paths.unparsedBodyPath;
+    const parsedPath = paths.parsedBodyPath;
 
     var body = [];
 
@@ -222,7 +237,8 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                 });
 
                 formData.on('file', (name, value, info) => {
-                    const fileContainingValue = path.join(saved_path,'/',insert_id,'/multipart/',info.filename);
+
+                    const fileContainingValue = path.join(paths.multipartSavePath,info.filename);
                     
                     fs.writeFile(fileContainingValue,value,function(err){
                         let success = (err)?0:1;
