@@ -1,4 +1,4 @@
-const {no_301_302_http_methods} = require('../constants.js');
+const {no_301_302_http_methods} = require('../../constants.js');
 
 const mmm = require('mmmagic');
 const mime = require('mime-types');
@@ -161,7 +161,7 @@ const isValidFormUrlEncoded = (body) => {
     return /^(?:(?:\w+)(?:\[(?:\d*|'[^']*')\])*=[\w\-\+\.%]*(?:&|$))+$/.test(body);
 }
 
-const isValidMultipart = (body) => {
+const isMultipart = (body) => {
     const pattern = /[\-\w]+\r\nContent-Disposition:\sform-data;\sname=.*\r\n/;
     return pattern.test(body);
 };
@@ -195,10 +195,12 @@ const detectBodyMime = (body,callback) => {
 
             if(isValidFormUrlEncoded(text)){
                 return callback(null,'application/x-www-form-urlencoded',null,buffer);
+            } 
+            
+            if(isMultipart(text)){
+                return callback(null,'multipart/form-data',null,buffer);
             }
 
-           
-            
             try {
                 yaml.load(text);
                 return callback(null,'text/yaml','yml',buffer);
@@ -208,7 +210,7 @@ const detectBodyMime = (body,callback) => {
         } else if(result=='application/octet-stream'){
             let text = buffer.toString();
 
-            if(isValidMultipart(text)){
+            if(isMultipart(text)){
                 return callback(null,'multipart/form-data',null,buffer);
             }
         }
@@ -216,6 +218,8 @@ const detectBodyMime = (body,callback) => {
         return callback(null,result,mime.extension(result),buffer);
     });
 }
+
+
 
 /**
  * https://stackoverflow.com/a/48394500

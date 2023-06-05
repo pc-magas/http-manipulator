@@ -1,6 +1,6 @@
 const url = require('node:url');
 const {http_methods,http_redirect} = require('../../constants.js');
-const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable, stringIsAValidUrl} = require('../../common/http_utils');
+const {sanitizeHttpMethods,isRedirectStatusCodeAcceptable, stringIsAValidUrl} = require('../../common/http_utils/http_utils.js');
 const {sqliteBoolVal} = require('../../common/db.js');
 
 class InvalidInputArgumentError extends Error

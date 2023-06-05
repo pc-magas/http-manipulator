@@ -347,7 +347,7 @@ test("Log Http POST Multipart With File Data",(done)=>{
                             const expected_path = path.join(savepath,insert_id,'multipart','test.png');
                             expect(value.value).toBe(expected_path);
                             
-                            path.exists('foo.txt', function(exists) { 
+                            path.exists(expected_path, function(exists) { 
                                 if (!exists) {
                                     done(new Error("no uploaded file exists"));
                                 }

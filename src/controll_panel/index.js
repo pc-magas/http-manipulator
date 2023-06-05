@@ -4,7 +4,7 @@ const EventEmitter = require('node:events');
 
 const express = require('express');
 
-const {getBaseUrl} = require('../common/http_utils');
+const {getBaseUrl} = require('../common/http_utils/http_utils.js');
 const nunjunks = require('./views');
 
 const app = express();

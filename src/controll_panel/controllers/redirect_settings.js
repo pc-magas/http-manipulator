@@ -1,5 +1,5 @@
 const nunjunks = require('../views');
-const {getBaseUrl} = require('../../common/http_utils.js');
+const {getBaseUrl} = require('../../common/http_utils/http_utils.js');
 const {saveRedirectHttps,saveAdvancedRedirect,InvalidInputArgumentError,ActionDoesnotSupportStatusCode,SaveNewValuesFailed} = require('../models/redirect_model');
 var {urlencoded} = require('express')
 

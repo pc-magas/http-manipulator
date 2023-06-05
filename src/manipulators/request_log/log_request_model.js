@@ -1,4 +1,4 @@
-const { getReqMime, detectBodyMime } = require('../../common/http_utils');
+const { getReqMime, detectBodyMime } = require('../../common/http_utils/http_utils.js');
 
 const url = require('url');
 const fs = require('node:fs');
@@ -255,7 +255,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
                             });
                     });
 
-                    saveStream.on('error',()=>{
+                    saveStream.on('error',(e)=>{
                         stmt.run({
                             'id': insert_id,
                             'name':name,
@@ -281,7 +281,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
     
                 });
 
-                s.pipe(formData);
+                busboyPassthrough.pipe(formData);
             } else {
                 update_request_detected_mime(mime, finalPath);
                 callback(null);
