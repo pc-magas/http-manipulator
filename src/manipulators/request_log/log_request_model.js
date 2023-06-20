@@ -1,4 +1,6 @@
-const { getReqMime, detectBodyMime } = require('../../common/http_utils/http_utils.js');
+const { getReqMime } = require('../../common/http_utils/http_utils.js');
+
+const detectBodyMime = require('../../common/http_utils/body.js');
 
 const url = require('url');
 const fs = require('node:fs');

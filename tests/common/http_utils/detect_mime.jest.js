@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('path');
 
-const {detectBodyMime} = require('../../../src/common/http_utils/http_utils.js');
+const detectBodyMime = require('../../../src/common/http_utils/body.js');
 
 const fileDataPath = path.resolve(__dirname,'__testdata__');
 

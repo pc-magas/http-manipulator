@@ -1,23 +1,41 @@
+
+const detectBodyMime = require('./body');
+
+const FLAG_MIME_TYPE_MISMATCH='FLAG_MIME_TYPE_MISMATCH';
+const FLAG_BOUNDARY_FIRST_LINE='FLAG_BOUNDARY_FIRST_LINE';
+const FLAG_BOUNDARY_MISMATCH = 'FLAG_BOUNDARY_MISMATCH';
+const FLAG_NO_FIELDS = 'FLAG_NO_FIELDS';
+
+module.exports.flags.FLAG_BOUNDARY_FIRST_LINE=FLAG_BOUNDARY_FIRST_LINE;
+
 /**
  * Best Effort multipart parser.
  * Body is assumed as multipart/form-data
  * @param {*} body 
  * @param {*} boundary 
- * @param {*} callback 
+ * @param {Function} fieldCallback
+ * @param {Function}  completeCallback
  */
-const parseMultipart = (body,boundary,fieldCallback) => {
+const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
 
     const bodyToParse = body.trim();
 
+    const flags = []
+
     const firstLineBoundary = bodyToParse.substring(2,70).split('\r\n')[0]
 
-    if(typeof boundary == "string"){
+    if(!boundary){
+        boundary = firstLineBoundary;
+        flags.push(FLAG_BOUNDARY_FIRST_LINE);
+    } else if(typeof boundary == "string") {
         boundary = boundary.trim();
-    }
+    } 
 
     // If no Boundary provided we can guess the first line as one
     if(boundary !== firstLineBoundary){
         boundary = firstLineBoundary;
+        flags.push(FLAG_BOUNDARY_FIRST_LINE);
+        flags.push(FLAG_BOUNDARY_MISMATCH);
     }
 
     // because a boundary wont start with -- we add it up
@@ -26,6 +44,9 @@ const parseMultipart = (body,boundary,fieldCallback) => {
     let fieldCount=0;
 
     fields.forEach((item)=>{
+
+        const fieldFlags=[];
+
         if(item.trim()=='--' || item.trim() == ''){
             return;
         }
@@ -55,8 +76,6 @@ const parseMultipart = (body,boundary,fieldCallback) => {
 
         item = item.trim();
 
-              
-
         fieldInfo = fieldInfo.replace("Content-Disposition: form-data; ",'').trim();
         
         const isFile = fieldInfo.indexOf('; filename=') > 0;
@@ -74,13 +93,27 @@ const parseMultipart = (body,boundary,fieldCallback) => {
          * FieldName: fieldName
          */ 
 
-        console.log("LINE",fieldInfo);
-        console.log("CONTENT tYPE",contentTypeLine);
-        console.log("NAME",fieldName);
-        console.log("FILENAME",filename);
-        console.log("DATA",item);
+         if(isFile){
+            detectBodyMime(item,(error,detectedMime)=>{
+
+                if(detectedMime != contentTypeLine){
+                    fieldFlags.push(FLAG_MIME_TYPE_MISMATCH);
+                }
+
+                fieldCallback(fieldName,item,isFile,filename,fieldFlags);
+            });
+         } else {
+            fieldCallback(fieldName,item,isFile,filename,fieldFlags);
+         }
     });
+
+
+
+    if(fieldCount==0){
+        flags.push(FLAG_NO_FIELDS);
+    }
+
 
 }
 
-module.exports=parseMultipart;
+module.exports.parseMultipart=parseMultipart;
