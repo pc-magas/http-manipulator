@@ -1,10 +1,10 @@
 const { getReqMime } = require('../../common/http_utils/http_utils.js');
 
 const detectBodyMime = require('../../common/http_utils/body.js');
+const {flags,parseMultipart} = require('../../common/multipart.js');
 
 const url = require('url');
 const fs = require('node:fs');
-const busboy = require('busboy');
 const path = require('path');
 
 const {Readable,PassThrough}= require('stream');
@@ -137,6 +137,34 @@ const mkPaths = (saved_path,insert_id)=>{
     return {requestBasePath,multipartSavePath,unparsedBodyPath,parsedBodyPath};
 }
 
+const log_multipart_field = (db,fieldname,contents,content_is_file) => {
+    const sql = `
+        INSERT INTO 
+        request_http_params (
+            request_id,
+            name,
+            value,
+            value_in_file,
+            param_location
+        )
+        VALUES (
+            :id,
+            :name,
+            :value,
+            :value_in_file,
+            'BODY'
+        );
+    `;
+
+    const stmt = db.prepare(sql);
+
+    stmt.run({
+        'value_in_file':content_is_file,
+        'name':fieldname,
+        'value':contents
+    });
+}
+
 const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
     const update_request_detected_mime = (mime, saved_path) => {
@@ -184,10 +212,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
             const s = new Readable()
             const filePassthrough = new PassThrough();
-            const busboyPassthrough = new PassThrough();
             s.pipe(filePassthrough);
-            s.pipe(busboyPassthrough);
-
             s.push(buffer)
             s.push(null)
 
@@ -197,93 +222,26 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
             if(mime == 'multipart/form-data'){
 
-                const detectedHeader = "multipart/form-data; boundary="+buffer.toString().substring(2,70).split('\r\n')[0]
-                const formData = busboy({ headers: { 'content-type': detectedHeader } });
+                const fieldCallback=(error,fieldName,fieldContent,isFile,filename,detectedMime,contentTypeLine,fieldFlags)=>{
+                    if(error){return;} // I cannot a better idea on how will make sense to somehow log this line
+                    let final_filename=isFile?path.join(paths.multipartSavePath,filename):null;
+                    if(final_filename!=null){
+                        fs.writeFileSync(final_filename,fieldContent);
+                        log_body_form_urlencoded(db,fieldName,final_filename,1);
+                        
+                        return;
+                    }
+                    
+                    log_body_form_urlencoded(db,fieldName,fieldContent,0);
+                };
 
-                // For performance reasons I avoid making a function because I wanna re-use the same statement.
-                const multipartInsertSql = `
-                    INSERT INTO request_http_params (
-                        request_id,
-                        name,
-                        value,
-                        value_is_array,
-                        value_in_file,
-                        value_index,
-                        param_location,
-                        saved_sucessfully
-                    )
-                    VALUES (
-                        :id,
-                        :name,
-                        :value,
-                        :value_is_array,
-                        :value_is_file,
-                        :value_index,
-                        'BODY',
-                        :saved_sucessfully
-                    );
-                `;
-
-                const stmt = db.prepare(multipartInsertSql);
-
-                formData.on('field', (name, value) => {
-                    stmt.run({
-                        'id': insert_id,
-                        'name':name,
-                        'value':value,
-                        'value_is_array':0, //@todo perform checks if value is [] terminated?
-                        'value_index': null,
-                        'value_is_file': 0,
-                        'saved_sucessfully': null
-                    });
-                });
-
-                formData.on('file', (name, value, info) => {
-
-                    const fileContainingValue = path.join(paths.multipartSavePath,info.filename);
-                    const saveStream = fs.createWriteStream(fileContainingValue);
-                    saveStream.pipe(value);
-
-                    saveStream.on('close',()=>{
-
-                            stmt.run({
-                                'id': insert_id,
-                                'name':name,
-                                'value':fileContainingValue,
-                                'value_is_array':0, //@todo perform checks if value is [] terminated?
-                                'value_index': null,
-                                'value_is_file': 1,
-                                'saved_sucessfully':1
-                            });
-                    });
-
-                    saveStream.on('error',(e)=>{
-                        stmt.run({
-                            'id': insert_id,
-                            'name':name,
-                            'value':fileContainingValue,
-                            'value_is_array':0, //@todo perform checks if value is [] terminated?
-                            'value_index': null,
-                            'value_is_file': 1,
-                            'saved_sucessfully':0
-                        });
-                    });
-
-                });
-
-                formData.on('close', () => {
-                    update_request_detected_mime(mime, finalPath);
+                const doneCallback=(fieldCount,flags)=>{
+                    update_request_detected_mime('multipart/form-data', finalPath);
                     callback(null);
-                });
+                };
 
-                formData.on('error', (error) => {
-                    // Opps in the end was not multipart
-                    update_request_detected_mime('text/plain', finalPath);
-                    callback(null);
-    
-                });
-
-                busboyPassthrough.pipe(formData);
+                parseMultipart(body,null,fieldCallback,doneCallback)
+                
             } else {
                 update_request_detected_mime(mime, finalPath);
                 callback(null);
