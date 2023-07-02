@@ -547,7 +547,7 @@ test("Log Http Post Log XML", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
@@ -664,7 +664,7 @@ test("Log Http PUT Log XML", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
@@ -780,7 +780,7 @@ test("Log Http PATCH Log XML", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
@@ -896,7 +896,7 @@ test("Log Http Post Log JSON", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,""+insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,""+insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
@@ -1009,7 +1009,7 @@ test("Log Http PUT Log JSON", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,""+insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,""+insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
@@ -1122,7 +1122,7 @@ test("Log Http PATCH Log JSON", (done)=>{
 
                 expect(result.path).toEqual("/example?param1=11&param2=22")
 
-                const expected_save_path = path.join(savepath,""+insert_id+'_body.raw');
+                const expected_save_path = path.join(savepath,""+insert_id+'/body.raw');
                 expect(result.raw_request_body_file).toEqual(expected_save_path);
             }catch(e){
                 return done(e);
