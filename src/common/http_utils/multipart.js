@@ -6,7 +6,12 @@ const FLAG_BOUNDARY_FIRST_LINE='FLAG_BOUNDARY_FIRST_LINE';
 const FLAG_BOUNDARY_MISMATCH = 'FLAG_BOUNDARY_MISMATCH';
 const FLAG_NO_FIELDS = 'FLAG_NO_FIELDS';
 
-module.exports.flags.FLAG_BOUNDARY_FIRST_LINE=FLAG_BOUNDARY_FIRST_LINE;
+module.exports.flags= {
+    FLAG_MIME_TYPE_MISMATCH,
+    FLAG_BOUNDARY_FIRST_LINE,
+    FLAG_BOUNDARY_MISMATCH,
+    FLAG_NO_FIELDS,
+};
 
 /**
  * Best Effort multipart parser.
@@ -18,6 +23,9 @@ module.exports.flags.FLAG_BOUNDARY_FIRST_LINE=FLAG_BOUNDARY_FIRST_LINE;
  */
 const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
 
+    if(Buffer.isBuffer(body)){
+        body = body.toString();
+    }
     const bodyToParse = body.trim();
 
     const flags = []
@@ -43,17 +51,15 @@ const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
 
     let fieldCount=0;
 
-    fields.forEach((item)=>{
-
+    for (const fieldItem of fields) {
+        let item = fieldItem;
         const fieldFlags=[];
 
         if(item.trim()=='--' || item.trim() == ''){
             return;
         }
         fieldCount++;
-        
-        console.log("FIELD");
-        
+                
         item = item.trim();
 
         const newlinePos = item.search('\r\n');
@@ -100,20 +106,18 @@ const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
                     fieldFlags.push(FLAG_MIME_TYPE_MISMATCH);
                 }
 
-                fieldCallback(fieldName,item,isFile,filename,fieldFlags);
+                fieldCallback(error,fieldName,item,isFile,filename,detectedMime,contentTypeLine,fieldFlags);
             });
          } else {
-            fieldCallback(fieldName,item,isFile,filename,fieldFlags);
+            fieldCallback(null,fieldName,item,isFile,filename,null,null,fieldFlags);
          }
-    });
-
-
+    }
 
     if(fieldCount==0){
         flags.push(FLAG_NO_FIELDS);
     }
 
-
+    completeCallback(fieldCount,flags);
 }
 
 module.exports.parseMultipart=parseMultipart;

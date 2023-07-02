@@ -20,4 +20,4 @@
       "NODE_ENV": "development"
     },
     "ext": "js,json,html,css,njk"
-  }
+}
