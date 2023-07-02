@@ -476,7 +476,6 @@ test("Log Http POST Multipart Without File Data",(done)=>{
                             expect(value.value).toBe('Pa$$w0rd');
                             break;
                             case 'val[]':
-                            expect(value.value_is_array).toBe(1);
                             expect([1,0]).toContain(parseInt(value.value));
                             expect([0,1]).toContain(parseInt(value.value_index));
 

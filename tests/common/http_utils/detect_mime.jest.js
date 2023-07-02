@@ -122,7 +122,7 @@ test("form url encoded multiple",(done)=>{
     });
 });
 
-test("form url encoded multiple array",()=>{
+test("form url encoded multiple array",(done)=>{
 
     const content=`pleas=ContentDisposition%3A%20formdata%3B%20name%3D%22myfile%22%3B%20filename%3D%22exclude.txt%22&me=plz&var[]=true&var[2]=false&var['blahblah']=ipsum`
     
