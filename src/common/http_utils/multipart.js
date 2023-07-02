@@ -16,10 +16,11 @@ module.exports.flags= {
 /**
  * Best Effort multipart parser.
  * Body is assumed as multipart/form-data
- * @param {*} body 
- * @param {*} boundary 
- * @param {Function} fieldCallback
- * @param {Function}  completeCallback
+ * 
+ * @param {*} body Buffer or string for incomming http body
+ * @param {*} boundary Multipaert Boundary
+ * @param {Function} fieldCallback Function that is called upon field detection
+ * @param {Function} completeCallback Callback that is called upon parse completion
  */
 const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
 
@@ -56,7 +57,7 @@ const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
         const fieldFlags=[];
 
         if(item.trim()=='--' || item.trim() == ''){
-            return;
+            continue;
         }
         fieldCount++;
                 
@@ -91,7 +92,7 @@ const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
         const fieldName = fieldInfo[0].replace("name=\"",'').replace(/\"$/,"");
         let filename = (isFile)?fieldInfo[1].replace('filename="',"").replace(/\"$/,"").trim():null; 
 
-         /**
+        /**
          * item: data
          * contentTypeLine: contentType mime
          * Field Values: fieldInfo
