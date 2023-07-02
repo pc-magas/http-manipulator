@@ -93,11 +93,15 @@ const parseMultipart = (body,boundary,fieldCallback,completeCallback) => {
         let filename = (isFile)?fieldInfo[1].replace('filename="',"").replace(/\"$/,"").trim():null; 
 
         /**
-         * item: data
+         * 
+         * This is a variable description used 
+         * for better understanding 
+         * 
+         * item: field data 
          * contentTypeLine: contentType mime
          * Field Values: fieldInfo
          * Filename:  filename
-         * FieldName: fieldName
+         * FieldName: Name of the field
          */ 
 
          if(isFile){
