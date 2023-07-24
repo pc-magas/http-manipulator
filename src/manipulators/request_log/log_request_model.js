@@ -1,7 +1,7 @@
 const { getReqMime } = require('../../common/http_utils/http_utils.js');
 
 const detectBodyMime = require('../../common/http_utils/body.js');
-const {flags,parseMultipart} = require('../../common/multipart.js');
+const {parseMultipart} = require('../../common/http_/multipart.js');
 
 const url = require('url');
 const fs = require('node:fs');
@@ -137,33 +137,6 @@ const mkPaths = (saved_path,insert_id)=>{
     return {requestBasePath,multipartSavePath,unparsedBodyPath,parsedBodyPath};
 }
 
-const log_multipart_field = (db,fieldname,contents,content_is_file) => {
-    const sql = `
-        INSERT INTO 
-        request_http_params (
-            request_id,
-            name,
-            value,
-            value_in_file,
-            param_location
-        )
-        VALUES (
-            :id,
-            :name,
-            :value,
-            :value_in_file,
-            'BODY'
-        );
-    `;
-
-    const stmt = db.prepare(sql);
-
-    stmt.run({
-        'value_in_file':content_is_file,
-        'name':fieldname,
-        'value':contents
-    });
-}
 
 const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
