@@ -1,7 +1,7 @@
 const { getReqMime } = require('../../common/http_utils/http_utils.js');
 
 const detectBodyMime = require('../../common/http_utils/body.js');
-const {parseMultipart} = require('../../common/http_/multipart.js');
+const {parseMultipart} = require('../../common/http_utils/multipart.js');
 
 const url = require('url');
 const fs = require('node:fs');
@@ -176,7 +176,7 @@ const log_request_body = (db, saved_path, req, insert_id, callback) => {
 
         // I ignore content-type because I do not trust the header. 
         // Content-Type header can be anything that body indicates and I want to cover this edge case.
-        return detectBodyMime(body, (err, mime, extention, buffer) => {
+        detectBodyMime(body, function(err, mime, extention, buffer) {
             if (err) { return; }
 
             if (mime == 'application/x-www-form-urlencoded') {

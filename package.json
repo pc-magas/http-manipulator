@@ -4,7 +4,7 @@
   "description": "A simple reserve proxy and http server for mocking and manipulating http requests",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest --verbose ./tests",
+    "test": "jest --verbose --runInBand ./tests",
     "start": "node src/index.js",
     "dev_docker": "nodemon src/index.js",
     "debug_doker": "nodemon --inspect --inspect-brk=9595 src/index.js",
