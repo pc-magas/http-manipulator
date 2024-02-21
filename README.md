@@ -1,3 +1,6 @@
+> No longer developed because I switth the project into python.
+> I had coiccurency issues that Nodejs' asyncronous natuire doies not help me to resolve.
+ 
 # Http Manipulator
 
 A v-host enabled http manupulation reverse proxy.
